@@ -115,6 +115,10 @@ Route::middleware('auth')->group(function () {
             Route::get('/depenses', [App\Http\Controllers\Admin\FinanceController::class, 'expenses'])->name('expenses');
             Route::post('/depenses', [App\Http\Controllers\Admin\FinanceController::class, 'storeExpense'])->name('expenses.store');
             Route::get('/paiements/{paiement}/recu', [App\Http\Controllers\Admin\FinanceController::class, 'receipt'])->name('payments.receipt');
+            
+            // Paiements des Formateurs (Commissions)
+            Route::get('/formateurs', [App\Http\Controllers\Admin\FinanceController::class, 'trainerPayments'])->name('trainer_payments');
+            Route::post('/formateurs', [App\Http\Controllers\Admin\FinanceController::class, 'storeTrainerPayment'])->name('trainer_payments.store');
         });
 
         // Gestion des Attestations

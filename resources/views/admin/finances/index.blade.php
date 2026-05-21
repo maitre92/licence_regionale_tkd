@@ -70,6 +70,9 @@
                     <a href="{{ route('admin.finances.expenses') }}" class="btn btn-outline-danger py-3 fw-bold">
                         <i class="fas fa-minus-circle me-2"></i> Enregistrer Dépense
                     </a>
+                    <a href="{{ route('admin.finances.trainer_payments') }}" class="btn btn-outline-warning py-3 fw-bold">
+                        <i class="fas fa-hand-holding-usd me-2"></i> Rémunérer Formateur
+                    </a>
                     <hr class="my-2">
                     <div class="p-3 bg-light rounded-3">
                         <div class="small fw-bold text-muted mb-2">RÉSUMÉ DU MOIS</div>

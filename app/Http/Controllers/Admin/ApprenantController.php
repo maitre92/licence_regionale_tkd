@@ -107,6 +107,8 @@ class ApprenantController extends Controller
      */
     public function show(Apprenant $apprenant): View
     {
+        $apprenant->load(['inscriptions.formation', 'inscriptions.paiements.creator']);
+        
         return view('admin.apprenants.show', [
             'apprenant' => $apprenant,
             'page_title' => $apprenant->nom_complet,

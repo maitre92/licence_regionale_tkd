@@ -18,6 +18,8 @@ class Depense extends Model
         'beneficiaire',
         'description',
         'piece_jointe',
+        'formation_id',
+        'user_id',
         'created_by'
     ];
 
@@ -31,10 +33,21 @@ class Depense extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function formation()
+    {
+        return $this->belongsTo(Formation::class);
+    }
+
+    public function trainer()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
     public static function getCategories()
     {
         return [
             'Salaire',
+            'Rémunération Formateur',
             'Loyer',
             'Électricité/Eau',
             'Internet',

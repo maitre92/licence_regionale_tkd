@@ -144,6 +144,10 @@
                                style="padding-left: 40px; font-size: 13px;" href="{{ route('admin.finances.payments') }}">
                                 <i class="fas fa-credit-card"></i> <span class="nav-text">Paiements</span>
                             </a>
+                            <a class="nav-link {{ request()->routeIs('admin.finances.trainer_payments') ? 'active' : '' }}" 
+                               style="padding-left: 40px; font-size: 13px;" href="{{ route('admin.finances.trainer_payments') }}">
+                                <i class="fas fa-hand-holding-usd"></i> <span class="nav-text">Rémunération Formateurs</span>
+                            </a>
                         @endif
                         @if($canViewExpenses)
                             <a class="nav-link {{ request()->routeIs('admin.finances.expenses') ? 'active' : '' }}" 

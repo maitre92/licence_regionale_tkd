@@ -254,13 +254,69 @@
                         </div>
                     </div>
 
-                    <!-- Tab: Paiements (Placeholder) -->
+                    <!-- Tab: Paiements -->
                     <div class="tab-pane fade" id="paiements" role="tabpanel" aria-labelledby="paiements-tab">
-                        <div class="text-center py-5">
-                            <i class="fas fa-file-invoice-dollar text-muted mb-3" style="font-size: 3rem; opacity: 0.2;"></i>
-                            <h5>Module Paiements à venir</h5>
-                            <p class="text-muted">Le suivi financier de cet apprenant s'affichera ici.</p>
-                        </div>
+                        @php
+                            $allPaiements = $apprenant->inscriptions->flatMap(function($ins) {
+                                return $ins->paiements;
+                            })->sortByDesc('date_paiement');
+                        @endphp
+
+                        @if($allPaiements->isEmpty())
+                            <div class="text-center py-5">
+                                <i class="fas fa-file-invoice-dollar text-muted mb-3" style="font-size: 3rem; opacity: 0.2;"></i>
+                                <h5>Aucun paiement enregistré</h5>
+                                <p class="text-muted">Les règlements effectués par cet apprenant s'afficheront ici.</p>
+                                <a href="{{ route('admin.finances.payments') }}" class="btn btn-primary btn-sm mt-2">
+                                    <i class="fas fa-plus me-1"></i> Enregistrer un paiement
+                                </a>
+                            </div>
+                        @else
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="bg-light text-uppercase" style="font-size: 0.75rem;">
+                                        <tr>
+                                            <th>Reçu / Date</th>
+                                            <th>Formation</th>
+                                            <th>Mode</th>
+                                            <th>Enregistré par</th>
+                                            <th class="text-end">Montant</th>
+                                            <th class="text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($allPaiements as $p)
+                                            <tr>
+                                                <td>
+                                                    <div class="fw-bold text-dark">{{ $p->recu_numero }}</div>
+                                                    <small class="text-muted">{{ $p->date_paiement->format('d/m/Y') }}</small>
+                                                </td>
+                                                <td>
+                                                    <span class="fw-medium">{{ $p->inscription->formation->nom }}</span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge rounded-pill bg-light text-dark border">{{ ucfirst($p->mode_paiement) }}</span>
+                                                    @if($p->reference)
+                                                        <div class="text-muted small" style="font-size: 0.7rem;">Ref: {{ $p->reference }}</div>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    <small class="text-muted">{{ $p->creator->name ?? 'Système' }}</small>
+                                                </td>
+                                                <td class="text-end fw-bold text-success">
+                                                    {{ number_format($p->montant, 0, ',', ' ') }} FCFA
+                                                </td>
+                                                <td class="text-center">
+                                                    <a href="{{ route('admin.finances.payments.receipt', $p) }}" target="_blank" class="btn btn-sm btn-light border" title="Imprimer le reçu">
+                                                        <i class="fas fa-print text-primary"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
