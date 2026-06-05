@@ -4,7 +4,7 @@
 @php $page_title = 'Catégories de formation'; @endphp
 
 @section('actions')
-    @if(Auth::user()->isSuperAdmin() || Auth::user()->hasPermission('gerer_categories_formations'))
+    @if(Auth::user()->isSuperAdmin() || Auth::user()->hasAnyPermission(['ajouter_categorie_formation', 'gerer_categories_formations']))
         <button class="btn text-white shadow-sm" style="background-color: var(--navbar-bg);" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
             <i class="fas fa-plus-circle me-1"></i> Nouvelle catégorie
         </button>
@@ -12,6 +12,13 @@
 @endsection
 
 @section('content')
+@php
+    $currentUser = Auth::user();
+    $isSuperAdmin = $currentUser && $currentUser->isSuperAdmin();
+    $canCreateCategory = $isSuperAdmin || ($currentUser && $currentUser->hasAnyPermission(['ajouter_categorie_formation', 'gerer_categories_formations']));
+    $canEditCategory = $isSuperAdmin || ($currentUser && $currentUser->hasAnyPermission(['modifier_categorie_formation', 'gerer_categories_formations']));
+    $canDeleteCategory = $isSuperAdmin || ($currentUser && $currentUser->hasAnyPermission(['supprimer_categorie_formation', 'gerer_categories_formations']));
+@endphp
 <div class="container-fluid p-0">
     <div class="card border-0 shadow-sm">
         <div class="card-header text-white" style="background-color: var(--navbar-bg);">
@@ -49,13 +56,15 @@
                                 @endif
                             </td>
                             <td class="text-end pe-4">
-                                @if(Auth::user()->isSuperAdmin() || Auth::user()->hasPermission('gerer_categories_formations'))
+                                @if($canEditCategory)
                                 <button class="btn btn-sm btn-outline-primary me-1" 
                                         data-bs-toggle="modal" 
                                         data-bs-target="#editCategoryModal{{ $category->id }}"
                                         title="Modifier">
                                     <i class="fas fa-edit"></i>
                                 </button>
+                                @endif
+                                @if($canDeleteCategory)
                                 <form action="{{ route('admin.categories-formations.destroy', $category) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('DELETE')
@@ -113,6 +122,7 @@
 </div>
 
 <!-- Modal Add -->
+@if($canCreateCategory)
 <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -140,4 +150,5 @@
         </div>
     </div>
 </div>
+@endif
 @endsection

@@ -36,7 +36,7 @@
                             <i class="fas fa-percentage text-warning me-2"></i> Détails de la Commission
                         </h6>
                         <div class="d-flex justify-content-between mb-2 small">
-                            <span class="text-muted">Pourcentage Accordé :</span>
+                            <span class="text-muted">Commission accordée :</span>
                             <span id="summary_percentage" class="fw-bold text-dark">0%</span>
                         </div>
                         <div class="d-flex justify-content-between mb-2 small">
@@ -252,7 +252,10 @@ document.addEventListener('DOMContentLoaded', function() {
         selectedFormation.formateurs.forEach(trainer => {
             const option = document.createElement('option');
             option.value = trainer.id;
-            option.textContent = `${trainer.name} (${trainer.percentage}%)`;
+            const commissionLabel = trainer.commission_type === 'montant'
+                ? formatFCFA(trainer.fixed_amount)
+                : `${trainer.percentage}%`;
+            option.textContent = `${trainer.name} (${commissionLabel})`;
             trainerSelect.appendChild(option);
         });
 
@@ -278,13 +281,15 @@ document.addEventListener('DOMContentLoaded', function() {
         selectedTrainer = selectedFormation.formateurs.find(t => t.id == trainerId);
 
         if (selectedTrainer) {
-            const percentage = selectedTrainer.percentage;
+            const commissionLabel = selectedTrainer.commission_type === 'montant'
+                ? formatFCFA(selectedTrainer.fixed_amount)
+                : `${selectedTrainer.percentage}%`;
             const commissionAcquise = selectedTrainer.commission_acquise;
             const dejaPaye = selectedTrainer.deja_paye;
             const reste = selectedTrainer.reste_a_payer;
 
             // Remplir le résumé
-            summaryPercentage.textContent = `${percentage}%`;
+            summaryPercentage.textContent = commissionLabel;
             summaryTotalCollecte.textContent = formatFCFA(selectedFormation.total_collecte);
             summaryCommissionAcquise.textContent = formatFCFA(commissionAcquise);
             summaryDejaPaye.textContent = formatFCFA(dejaPaye);

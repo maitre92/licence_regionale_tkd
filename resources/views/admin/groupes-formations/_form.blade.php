@@ -5,7 +5,9 @@
     $selectedFormateurs = $selectedFormateurs ?? [];
     $selectedRoles = $selectedRoles ?? [];
     $selectedCommissions = $selectedCommissions ?? [];
-    $selectedObservations = $selectedObservations ?? [];
+    $selectedCommissionTypes = $selectedCommissionTypes ?? [];
+    $selectedCommissionAmounts = $selectedCommissionAmounts ?? [];
+    $salles = $salles ?? collect();
     $nextGroupNumber = $formation ? (($formation->groupes_count ?? $formation->groupes()->count()) + 1) : 1;
     $scheduleSource = old('emploi_du_temps', $groupe->emploi_du_temps ?? '');
     $scheduleRows = json_decode($scheduleSource, true);
@@ -58,7 +60,7 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-bold">Formateur principal <span class="text-danger">*</span></label>
-                        <select name="formateur_principal_id" class="form-select @error('formateur_principal_id') is-invalid @enderror" required>
+                        <select name="formateur_principal_id" id="formateur_principal_id" class="form-select @error('formateur_principal_id') is-invalid @enderror" required>
                             <option value="">Sélectionner...</option>
                             @foreach($formateurs as $formateur)
                                 <option value="{{ $formateur->id }}" {{ old('formateur_principal_id', $groupe->formateur_principal_id ?? null) == $formateur->id ? 'selected' : '' }}>
@@ -90,11 +92,19 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-bold">Salle</label>
-                        <input type="text" name="salle" class="form-control" value="{{ old('salle', $groupe->salle ?? '') }}">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">Observations</label>
-                        <input type="text" name="observations" class="form-control" value="{{ old('observations', $groupe->observations ?? '') }}">
+                        @php $selectedSalle = old('salle', $groupe->salle ?? $formation?->salle); @endphp
+                        <select name="salle" class="form-select @error('salle') is-invalid @enderror">
+                            <option value="">Sélectionner une salle...</option>
+                            @foreach($salles as $salleOption)
+                                <option value="{{ $salleOption->nom }}" {{ $selectedSalle === $salleOption->nom ? 'selected' : '' }}>
+                                    {{ $salleOption->nom }}{{ $salleOption->capacite ? ' - ' . $salleOption->capacite . ' places' : '' }}
+                                </option>
+                            @endforeach
+                            @if($selectedSalle && !$salles->contains('nom', $selectedSalle))
+                                <option value="{{ $selectedSalle }}" selected>{{ $selectedSalle }}</option>
+                            @endif
+                        </select>
+                        @error('salle')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                 </div>
             </div>
@@ -151,7 +161,7 @@
             <div class="card-header bg-white fw-bold">Formateurs secondaires</div>
             <div class="card-body">
                 @foreach($formateurs as $formateur)
-                    <div class="border rounded p-2 mb-2">
+                    <div class="border rounded p-2 mb-2 secondary-formateur" data-formateur-id="{{ $formateur->id }}">
                         <div class="form-check mb-2">
                             <input class="form-check-input" type="checkbox" name="formateurs[]" value="{{ $formateur->id }}" id="formateur-{{ $formateur->id }}" {{ in_array($formateur->id, old('formateurs', $selectedFormateurs)) ? 'checked' : '' }}>
                             <label class="form-check-label fw-bold" for="formateur-{{ $formateur->id }}">{{ $formateur->name }}</label>
@@ -165,10 +175,23 @@
                                 </select>
                             </div>
                             <div class="col-6">
-                                <input type="number" min="0" max="100" name="formateur_commissions[{{ $formateur->id }}]" class="form-control form-control-sm" placeholder="%" value="{{ old("formateur_commissions.{$formateur->id}", $selectedCommissions[$formateur->id] ?? '') }}">
+                                @php
+                                    $commissionType = old("formateur_commission_types.{$formateur->id}", $selectedCommissionTypes[$formateur->id] ?? 'pourcentage');
+                                    $commissionPercent = old("formateur_commissions.{$formateur->id}", $selectedCommissions[$formateur->id] ?? '');
+                                    $commissionAmount = old("formateur_commission_amounts.{$formateur->id}", $selectedCommissionAmounts[$formateur->id] ?? '');
+                                @endphp
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-primary w-100 btn-commission"
+                                        data-formateur-id="{{ $formateur->id }}"
+                                        data-formateur-name="{{ $formateur->name }}">
+                                    <i class="fas fa-coins me-1"></i>
+                                    <span class="commission-label" data-formateur-id="{{ $formateur->id }}">Commission</span>
+                                </button>
+                                <input type="hidden" name="formateur_commission_types[{{ $formateur->id }}]" class="commission-type-input" data-formateur-id="{{ $formateur->id }}" value="{{ $commissionType }}">
+                                <input type="hidden" name="formateur_commissions[{{ $formateur->id }}]" class="commission-percent-input" data-formateur-id="{{ $formateur->id }}" value="{{ $commissionPercent }}">
+                                <input type="hidden" name="formateur_commission_amounts[{{ $formateur->id }}]" class="commission-amount-input" data-formateur-id="{{ $formateur->id }}" value="{{ $commissionAmount }}">
                             </div>
                         </div>
-                        <input type="text" name="formateur_observations[{{ $formateur->id }}]" class="form-control form-control-sm mt-2" placeholder="Observations" value="{{ old("formateur_observations.{$formateur->id}", $selectedObservations[$formateur->id] ?? '') }}">
                     </div>
                 @endforeach
             </div>
@@ -183,15 +206,202 @@
     </div>
 </div>
 
+<div class="modal fade" id="commissionModal" tabindex="-1" aria-labelledby="commissionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header text-white" style="background-color: var(--navbar-bg);">
+                <h5 class="modal-title" id="commissionModalLabel">Commission du formateur</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">Définir la commission pour <strong id="commissionFormateurName"></strong>.</p>
+                <input type="hidden" id="commissionFormateurId">
+                <div class="mb-3" id="commissionTypeGroup">
+                    <label for="commissionType" class="form-label">Mode de commission</label>
+                    <select id="commissionType" class="form-select">
+                        <option value="pourcentage">Pourcentage</option>
+                        <option value="montant">Montant fixe</option>
+                    </select>
+                </div>
+                <div class="mb-3" id="commissionPercentGroup">
+                    <label for="commissionPercent" class="form-label">Pourcentage</label>
+                    <div class="input-group">
+                        <select id="commissionPercent" class="form-select">
+                            <option value="">Choisir...</option>
+                            @foreach([20, 30, 40, 50, 60, 70, 80] as $percentage)
+                                <option value="{{ $percentage }}">{{ $percentage }}%</option>
+                            @endforeach
+                        </select>
+                        <span class="input-group-text">%</span>
+                    </div>
+                    <div class="invalid-feedback">Veuillez sélectionner un pourcentage de commission.</div>
+                </div>
+                <div class="mb-3 d-none" id="commissionAmountGroup">
+                    <label for="commissionAmount" class="form-label">Montant fixe</label>
+                    <div class="input-group">
+                        <input type="number" min="0" step="0.01" id="commissionAmount" class="form-control">
+                        <span class="input-group-text">FCFA</span>
+                    </div>
+                    <div class="invalid-feedback">Le montant fixe est obligatoire.</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="saveCommission">Valider</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const formationSelect = document.getElementById('formation_id');
         const nomInput = document.getElementById('nom');
         const codeInput = document.getElementById('code');
+        const principalSelect = document.getElementById('formateur_principal_id');
+        const commissionModalElement = document.getElementById('commissionModal');
+        const commissionModal = commissionModalElement ? new bootstrap.Modal(commissionModalElement) : null;
+        const commissionFormateurId = document.getElementById('commissionFormateurId');
+        const commissionFormateurName = document.getElementById('commissionFormateurName');
+        const commissionTypeGroup = document.getElementById('commissionTypeGroup');
+        const commissionType = document.getElementById('commissionType');
+        const commissionPercent = document.getElementById('commissionPercent');
+        const commissionAmount = document.getElementById('commissionAmount');
+        const commissionPercentGroup = document.getElementById('commissionPercentGroup');
+        const commissionAmountGroup = document.getElementById('commissionAmountGroup');
+        const saveCommission = document.getElementById('saveCommission');
         const form = document.getElementById('groupeFormationForm');
         const scheduleTable = document.querySelector('#scheduleTable tbody');
         const addScheduleRow = document.getElementById('addScheduleRow');
         let rowCount = document.querySelectorAll('.schedule-row').length;
+
+        function commissionInputs(formateurId) {
+            return {
+                type: document.querySelector(`.commission-type-input[data-formateur-id="${formateurId}"]`),
+                percent: document.querySelector(`.commission-percent-input[data-formateur-id="${formateurId}"]`),
+                amount: document.querySelector(`.commission-amount-input[data-formateur-id="${formateurId}"]`),
+                label: document.querySelector(`.commission-label[data-formateur-id="${formateurId}"]`),
+            };
+        }
+
+        function ensurePrincipalCommissionInputs(formateurId) {
+            if (!formateurId || commissionInputs(formateurId).type) {
+                return;
+            }
+
+            const wrapper = document.createElement('div');
+            wrapper.classList.add('principal-commission-inputs');
+            wrapper.innerHTML = `
+                <input type="hidden" name="formateur_commission_types[${formateurId}]" class="commission-type-input" data-formateur-id="${formateurId}" value="pourcentage">
+                <input type="hidden" name="formateur_commissions[${formateurId}]" class="commission-percent-input" data-formateur-id="${formateurId}" value="">
+                <input type="hidden" name="formateur_commission_amounts[${formateurId}]" class="commission-amount-input" data-formateur-id="${formateurId}" value="">
+            `;
+            form?.appendChild(wrapper);
+        }
+
+        function formatCommissionLabel(formateurId) {
+            const inputs = commissionInputs(formateurId);
+            if (!inputs.type) {
+                return;
+            }
+
+            const type = inputs.type.value || 'pourcentage';
+            const label = type === 'montant'
+                ? (inputs.amount.value ? `${Number(inputs.amount.value).toLocaleString('fr-FR')} FCFA` : 'Montant')
+                : (inputs.percent.value ? `${inputs.percent.value}%` : 'Pourcentage');
+
+            if (inputs.label) {
+                inputs.label.textContent = label;
+            }
+        }
+
+        function toggleCommissionMode() {
+            const isAmount = commissionType.value === 'montant';
+            commissionPercentGroup.classList.toggle('d-none', isAmount);
+            commissionAmountGroup.classList.toggle('d-none', !isAmount);
+            commissionPercent.classList.remove('is-invalid');
+            commissionAmount.classList.remove('is-invalid');
+        }
+
+        function openCommissionModal(formateurId, formateurName, allowAmount = true) {
+            ensurePrincipalCommissionInputs(formateurId);
+            const inputs = commissionInputs(formateurId);
+
+            commissionFormateurId.value = formateurId;
+            commissionFormateurName.textContent = formateurName;
+            commissionType.value = allowAmount ? (inputs.type?.value || 'pourcentage') : 'pourcentage';
+            commissionTypeGroup.classList.toggle('d-none', !allowAmount);
+            commissionPercent.value = inputs.percent?.value || '';
+            commissionAmount.value = allowAmount ? (inputs.amount?.value || '') : '';
+            toggleCommissionMode();
+            commissionModal?.show();
+        }
+
+        commissionType?.addEventListener('change', toggleCommissionMode);
+
+        saveCommission?.addEventListener('click', function () {
+            const formateurId = commissionFormateurId.value;
+            const inputs = commissionInputs(formateurId);
+            const isAmount = commissionType.value === 'montant';
+
+            if (isAmount && (!commissionAmount.value || Number(commissionAmount.value) < 0)) {
+                commissionAmount.classList.add('is-invalid');
+                return;
+            }
+
+            if (!isAmount && !['20', '30', '40', '50', '60', '70', '80'].includes(commissionPercent.value)) {
+                commissionPercent.classList.add('is-invalid');
+                return;
+            }
+
+            inputs.type.value = commissionType.value;
+            inputs.percent.value = isAmount ? '' : commissionPercent.value;
+            inputs.amount.value = isAmount ? commissionAmount.value : '';
+            formatCommissionLabel(formateurId);
+            commissionModal?.hide();
+        });
+
+        document.querySelectorAll('.btn-commission').forEach(button => {
+            button.addEventListener('click', function () {
+                openCommissionModal(this.dataset.formateurId, this.dataset.formateurName, true);
+            });
+        });
+
+        document.querySelectorAll('.secondary-formateur input[name="formateurs[]"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function () {
+                if (this.checked) {
+                    const card = this.closest('.secondary-formateur');
+                    openCommissionModal(this.value, card.querySelector('.form-check-label')?.textContent?.trim() || 'Formateur', true);
+                }
+            });
+        });
+
+        document.querySelectorAll('.commission-type-input').forEach(input => {
+            formatCommissionLabel(input.dataset.formateurId);
+        });
+
+        function updateSecondaryFormateurs() {
+            const principalId = principalSelect?.value || '';
+
+            document.querySelectorAll('.secondary-formateur').forEach(card => {
+                const isPrincipal = principalId && card.dataset.formateurId === principalId;
+                card.classList.toggle('d-none', isPrincipal);
+                card.querySelectorAll('input:not(.commission-type-input):not(.commission-percent-input):not(.commission-amount-input), select').forEach(input => {
+                    input.disabled = isPrincipal;
+                    if (isPrincipal && input.type === 'checkbox') {
+                        input.checked = false;
+                    }
+                });
+            });
+        }
+
+        principalSelect?.addEventListener('change', function () {
+            updateSecondaryFormateurs();
+            if (this.value) {
+                openCommissionModal(this.value, this.options[this.selectedIndex].text.trim(), false);
+            }
+        });
+        updateSecondaryFormateurs();
 
         @if(!$groupe)
             formationSelect?.addEventListener('change', function () {
@@ -245,7 +455,25 @@
 
         attachRemoveEvent();
 
-        form?.addEventListener('submit', function () {
+        form?.addEventListener('submit', function (event) {
+            const principalId = principalSelect?.value || '';
+
+            if (principalId && !hasCommission(principalId)) {
+                openCommissionModal(principalId, principalSelect.options[principalSelect.selectedIndex].text.trim(), false);
+                event.preventDefault();
+                return;
+            }
+
+            const missingSecondary = Array.from(document.querySelectorAll('.secondary-formateur input[name="formateurs[]"]:checked'))
+                .find(input => !hasCommission(input.value));
+
+            if (missingSecondary) {
+                const card = missingSecondary.closest('.secondary-formateur');
+                openCommissionModal(missingSecondary.value, card.querySelector('.form-check-label')?.textContent?.trim() || 'Formateur', true);
+                event.preventDefault();
+                return;
+            }
+
             const scheduleData = [];
             document.querySelectorAll('.schedule-row').forEach(row => {
                 const day = row.querySelector('select').value;
@@ -261,5 +489,16 @@
 
             document.getElementById('emploi_du_temps_json').value = JSON.stringify(scheduleData);
         });
+
+        function hasCommission(formateurId) {
+            const inputs = commissionInputs(formateurId);
+            if (!inputs.type) {
+                return false;
+            }
+
+            return inputs.type.value === 'montant'
+                ? Boolean(inputs.amount.value)
+                : Boolean(inputs.percent.value);
+        }
     });
 </script>

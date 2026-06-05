@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Permission;
+use App\Models\Salle;
 use App\Models\User;
 use App\Shared\Enums\UserRole;
 use App\Shared\Enums\UserStatus;
@@ -53,17 +54,98 @@ class SettingsController extends Controller
 
         // Grouper les permissions par module
         $permissionsByModule = $allPermissions->groupBy('module');
+        $salles = Salle::orderBy('nom')->get();
 
         return view('admin.settings', [
             'users' => $users,
             'permissions' => $permissions,
             'permissionsByModule' => $permissionsByModule,
+            'salles' => $salles,
             'permissionSearch' => $permissionSearch,
             'roles' => collect(UserRole::assignableBy($currentUser))->mapWithKeys(fn($role) => [$role->value => $role->label()])->toArray(),
             'statuses' => collect(UserStatus::cases())->mapWithKeys(fn($status) => [$status->value => $status->label()])->toArray(),
             'page_title' => 'Paramètres',
             'active_menu' => 'settings',
         ]);
+    }
+
+    public function storeSalle(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'nom' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'capacite' => ['nullable', 'integer', 'min:0', 'max:100000'],
+            'is_active' => ['nullable', 'boolean'],
+        ], [
+            'nom.required' => 'Le nom de la salle est obligatoire.',
+        ]);
+
+        $validated['is_active'] = $request->boolean('is_active', true);
+        $validated['slug'] = Str::slug($validated['nom']);
+
+        $existingSalle = Salle::withTrashed()
+            ->where('nom', $validated['nom'])
+            ->orWhere('slug', $validated['slug'])
+            ->first();
+
+        if ($existingSalle) {
+            if ($existingSalle->trashed()) {
+                $existingSalle->restore();
+                $existingSalle->update($validated);
+
+                return redirect()->route('admin.settings', ['tab' => 'salles-list'])
+                    ->with('success', 'Salle restaurée avec succès');
+            }
+
+            return redirect()->route('admin.settings', ['tab' => 'salles-list'])
+                ->withInput()
+                ->with('warning', 'Cette salle existe déjà.');
+        }
+
+        Salle::create($validated);
+
+        return redirect()->route('admin.settings', ['tab' => 'salles-list'])
+            ->with('success', 'Salle créée avec succès');
+    }
+
+    public function updateSalle(Request $request, Salle $salle): RedirectResponse
+    {
+        $validated = $request->validate([
+            'nom' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('salles', 'nom')->ignore($salle->id),
+            ],
+            'description' => ['nullable', 'string'],
+            'capacite' => ['nullable', 'integer', 'min:0', 'max:100000'],
+            'is_active' => ['nullable', 'boolean'],
+        ], [
+            'nom.required' => 'Le nom de la salle est obligatoire.',
+            'nom.unique' => 'Cette salle existe déjà.',
+        ]);
+
+        $validated['is_active'] = $request->boolean('is_active');
+        $validated['slug'] = Str::slug($validated['nom']);
+
+        if (Salle::where('slug', $validated['slug'])->whereKeyNot($salle->id)->exists()) {
+            return redirect()->route('admin.settings', ['tab' => 'salles-list'])
+                ->withInput()
+                ->with('warning', 'Une salle avec un nom équivalent existe déjà.');
+        }
+
+        $salle->update($validated);
+
+        return redirect()->route('admin.settings', ['tab' => 'salles-list'])
+            ->with('success', 'Salle mise à jour avec succès');
+    }
+
+    public function destroySalle(Salle $salle): RedirectResponse
+    {
+        $salle->delete();
+
+        return redirect()->route('admin.settings', ['tab' => 'salles-list'])
+            ->with('success', 'Salle supprimée avec succès');
     }
 
     /**

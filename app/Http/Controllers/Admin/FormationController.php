@@ -11,6 +11,7 @@ use App\Shared\Enums\UserRole;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class FormationController extends Controller
@@ -44,17 +45,15 @@ class FormationController extends Controller
     public function create()
     {
         $categories = CategorieFormation::where('is_active', true)->orderBy('nom')->get();
-        $formateurs = User::where('role', '!=', UserRole::SUPERADMIN->value)
-            ->orderBy('name')
-            ->get();
-        return view('admin.formations.create', compact('categories', 'formateurs'));
+
+        return view('admin.formations.create', compact('categories'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
             'nom' => 'required|string|max:255',
-            'code' => 'required|string|max:50|unique:formations,code',
+            'code' => 'nullable|string|max:50|unique:formations,code',
             'categorie_formation_id' => 'required|exists:categorie_formations,id',
             'type' => 'required|in:Présentiel,En ligne,Hybride',
             'duree_heures' => 'nullable|integer|min:0',
@@ -62,7 +61,6 @@ class FormationController extends Controller
             'frais_inscription' => 'nullable|numeric|min:0',
             'capacite_max' => 'nullable|integer|min:0',
             'niveau' => 'nullable|string|max:100',
-            'salle' => 'nullable|string|max:255',
             'date_debut' => 'nullable|date',
             'date_fin' => 'nullable|date|after_or_equal:date_debut',
             'formateurs' => 'nullable|array',
@@ -75,6 +73,7 @@ class FormationController extends Controller
         $pourcentages = Arr::pull($validated, 'formateur_commissions', []);
         $this->validateFormateurPercentages($formateurIds, $pourcentages);
 
+        $validated['code'] = $validated['code'] ?? $this->generateFormationCode($validated['nom']);
         $validated['created_by'] = Auth::id();
         $validated['statut'] = 'planifiee';
 
@@ -208,7 +207,6 @@ class FormationController extends Controller
             'nom' => $groupe->nom ?: $formation->nom . ' G1',
             'formateur_principal_id' => $principalId ?: $groupe->formateur_principal_id,
             'capacite_max' => $formation->capacite_max,
-            'salle' => $formation->salle,
             'date_debut' => $formation->date_debut,
             'date_fin' => $formation->date_fin,
         ]);
@@ -228,5 +226,26 @@ class FormationController extends Controller
                 })
                 ->toArray()
         );
+    }
+
+    private function generateFormationCode(string $name): string
+    {
+        $base = Str::of($name)
+            ->ascii()
+            ->upper()
+            ->replaceMatches('/[^A-Z0-9]+/', '-')
+            ->trim('-')
+            ->limit(18, '')
+            ->value();
+
+        $base = $base ?: 'FORMATION';
+        $counter = 1;
+
+        do {
+            $code = sprintf('%s-%03d', $base, $counter);
+            $counter++;
+        } while (Formation::withTrashed()->where('code', $code)->exists());
+
+        return $code;
     }
 }

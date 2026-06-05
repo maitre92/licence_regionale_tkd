@@ -17,6 +17,7 @@
                 $canCreateLearner = $user && ($user->isSuperAdmin() || $user->hasPermission('create_learner'));
                 $canViewCourses = $user && ($user->isSuperAdmin() || $user->hasAnyPermission(['voir_formations', 'view_courses']));
                 $canCreateCourse = $user && ($user->isSuperAdmin() || $user->hasAnyPermission(['ajouter_formation', 'create_course']));
+                $canViewCategories = $user && ($user->isSuperAdmin() || $user->hasAnyPermission(['voir_categories_formations', 'gerer_categories_formations', 'voir_formations', 'view_courses']));
                 $canViewPedagogical = $user && ($user->isSuperAdmin() || $user->hasAnyPermission([ 'view_pedagogical', 'view_attendance', 'view_evaluations', 'view_exams', 'view_grades' ]));
                 $canViewAttendance = $user && ($user->isSuperAdmin() || $user->hasPermission('view_attendance'));
                 $canViewEvaluations = $user && ($user->isSuperAdmin() || $user->hasPermission('view_evaluations'));
@@ -61,10 +62,12 @@
                         <i class="fas fa-chevron-down ms-auto" style="font-size: 12px;"></i>
                     </a>
                     <div class="collapse {{ request()->routeIs('admin.formations.*') || request()->routeIs('admin.groupes-formations.*') || request()->routeIs('admin.categories-formations.*') ? 'show' : '' }}" id="formations-menu">
-                        <a class="nav-link" style="padding-left: 40px; font-size: 13px;" 
-                           href="{{ route('admin.categories-formations.index') }}">
-                            <i class="fas fa-tags"></i> <span class="nav-text">Catégories formations</span>
-                        </a>
+                        @if($canViewCategories)
+                            <a class="nav-link" style="padding-left: 40px; font-size: 13px;" 
+                               href="{{ route('admin.categories-formations.index') }}">
+                                <i class="fas fa-tags"></i> <span class="nav-text">Catégories formations</span>
+                            </a>
+                        @endif
                         @if($canCreateCourse)
                             <a class="nav-link" style="padding-left: 40px; font-size: 13px;" 
                                href="{{ route('admin.formations.create') }}">

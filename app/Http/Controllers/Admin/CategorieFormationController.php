@@ -9,6 +9,14 @@ use Illuminate\Support\Str;
 
 class CategorieFormationController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:voir_categories_formations,ajouter_categorie_formation,modifier_categorie_formation,supprimer_categorie_formation,gerer_categories_formations,voir_formations')->only('index');
+        $this->middleware('permission:ajouter_categorie_formation,gerer_categories_formations')->only('store');
+        $this->middleware('permission:modifier_categorie_formation,gerer_categories_formations')->only('update');
+        $this->middleware('permission:supprimer_categorie_formation,gerer_categories_formations')->only('destroy');
+    }
+
     public function index()
     {
         $categories = CategorieFormation::withCount('formations')->orderBy('nom')->get();

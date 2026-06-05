@@ -224,14 +224,24 @@
                         
                         <div class="col-md-6" id="passwordFields">
                             <label for="password" class="form-label" id="passwordLabel">Mot de passe <span class="text-danger">*</span></label>
-                            <input type="password" class="form-control" id="password" name="password">
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="password" name="password">
+                                <button class="btn btn-outline-secondary password-toggle" type="button" data-target="password" aria-label="Afficher le mot de passe">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
                             <div class="invalid-feedback" id="password-error"></div>
                             <small class="text-muted" id="passwordHelp">Laissez vide pour conserver le mot de passe actuel (en modification)</small>
                         </div>
                         
                         <div class="col-md-6" id="passwordConfirmField">
                             <label for="password_confirmation" class="form-label" id="passwordConfirmLabel">Confirmer le mot de passe <span class="text-danger">*</span></label>
-                            <input type="password" class="form-control" id="password_confirmation" name="password_confirmation">
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="password_confirmation" name="password_confirmation">
+                                <button class="btn btn-outline-secondary password-toggle" type="button" data-target="password_confirmation" aria-label="Afficher la confirmation du mot de passe">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
                             <div class="invalid-feedback" id="password_confirmation-error"></div>
                         </div>
                     </div>
@@ -345,6 +355,19 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     roleSelect?.addEventListener('change', toggleFormateurFields);
+
+    document.querySelectorAll('.password-toggle').forEach(button => {
+        button.addEventListener('click', function() {
+            const input = document.getElementById(this.dataset.target);
+            const icon = this.querySelector('i');
+            const shouldShow = input.type === 'password';
+
+            input.type = shouldShow ? 'text' : 'password';
+            icon.classList.toggle('fa-eye', !shouldShow);
+            icon.classList.toggle('fa-eye-slash', shouldShow);
+            this.setAttribute('aria-label', shouldShow ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
+        });
+    });
     
     // Supprimer un utilisateur
     document.querySelectorAll('.btn-delete-user').forEach(btn => {

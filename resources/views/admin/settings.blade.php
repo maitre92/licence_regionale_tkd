@@ -22,6 +22,9 @@
                 <a href="#" class="list-group-item list-group-item-action settings-menu-item" data-target="permissions-assign">
                     <i class="fas fa-user-check"></i> Assigner Permissions
                 </a>
+                <a href="#" class="list-group-item list-group-item-action settings-menu-item" data-target="salles-list">
+                    <i class="fas fa-door-open"></i> Salles
+                </a>
             </div>
         </div>
     </div>
@@ -309,6 +312,136 @@
             </div>
         </div>
 
+        <!-- Salles -->
+        <div class="settings-content" id="salles-list" style="display: none;">
+            <div class="card mb-4">
+                <div class="card-header settings-card-header text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-door-open"></i> Salles
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ route('admin.settings.salles.store') }}" method="POST" class="row g-3 align-items-end mb-4">
+                        @csrf
+                        <div class="col-md-4">
+                            <label for="salle_nom" class="form-label">Nom de la salle</label>
+                            <input type="text" name="nom" id="salle_nom" class="form-control @error('nom') is-invalid @enderror" value="{{ old('nom') }}" required placeholder="ex: Salle A1">
+                            @error('nom')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-md-2">
+                            <label for="salle_capacite" class="form-label">Capacité</label>
+                            <input type="number" min="0" name="capacite" id="salle_capacite" class="form-control @error('capacite') is-invalid @enderror" value="{{ old('capacite') }}">
+                            @error('capacite')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-md-4">
+                            <label for="salle_description" class="form-label">Description</label>
+                            <input type="text" name="description" id="salle_description" class="form-control" value="{{ old('description') }}" placeholder="Bâtiment, étage, équipement...">
+                        </div>
+                        <div class="col-md-2">
+                            <input type="hidden" name="is_active" value="0">
+                            <div class="form-check form-switch d-block mb-2">
+                                <input class="form-check-input" type="checkbox" id="salle_is_active" name="is_active" value="1" checked>
+                                <label class="form-check-label" for="salle_is_active">Active</label>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-plus"></i> Ajouter
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Capacité</th>
+                                    <th>Description</th>
+                                    <th>Statut</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($salles ?? [] as $salle)
+                                    <tr>
+                                        <td class="fw-bold">{{ $salle->nom }}</td>
+                                        <td>{{ $salle->capacite ? $salle->capacite . ' places' : '-' }}</td>
+                                        <td>{{ $salle->description ?: '-' }}</td>
+                                        <td>
+                                            @if($salle->is_active)
+                                                <span class="badge bg-success">Active</span>
+                                            @else
+                                                <span class="badge bg-secondary">Inactive</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="d-flex justify-content-center gap-2">
+                                                <button type="button"
+                                                        class="btn btn-sm btn-outline-secondary"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#editSalleModal{{ $salle->id }}"
+                                                        title="Modifier">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <form method="POST" action="{{ route('admin.settings.salles.destroy', $salle) }}" class="d-inline delete-salle-form">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="button" class="btn btn-sm btn-outline-danger btn-delete-salle" data-salle-name="{{ $salle->nom }}" title="Supprimer">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    <div class="modal fade" id="editSalleModal{{ $salle->id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header bg-dark text-white">
+                                                    <h5 class="modal-title"><i class="fas fa-edit"></i> Modifier la salle</h5>
+                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                                                </div>
+                                                <form action="{{ route('admin.settings.salles.update', $salle) }}" method="POST">
+                                                    @csrf
+                                                    @method('PUT')
+                                                    <div class="modal-body">
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Nom de la salle</label>
+                                                            <input type="text" name="nom" class="form-control" value="{{ old('nom', $salle->nom) }}" required>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Capacité</label>
+                                                            <input type="number" min="0" name="capacite" class="form-control" value="{{ old('capacite', $salle->capacite) }}">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Description</label>
+                                                            <textarea name="description" class="form-control" rows="3">{{ old('description', $salle->description) }}</textarea>
+                                                        </div>
+                                                        <input type="hidden" name="is_active" value="0">
+                                                        <div class="form-check form-switch">
+                                                            <input class="form-check-input" type="checkbox" name="is_active" id="salle_active_{{ $salle->id }}" value="1" {{ $salle->is_active ? 'checked' : '' }}>
+                                                            <label class="form-check-label" for="salle_active_{{ $salle->id }}">Salle active</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4 text-muted">Aucune salle enregistrée</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Changer mot de passe -->
         <div class="settings-content" id="change-password" style="display: none;">
             <div class="card">
@@ -519,12 +652,22 @@
                     </div>
                     <div class="mb-3">
                         <label for="new_user_password" class="form-label" id="settings_user_password_label">Mot de passe</label>
-                        <input type="password" name="password" id="new_user_password" class="form-control" required>
+                        <div class="input-group">
+                            <input type="password" name="password" id="new_user_password" class="form-control" required>
+                            <button class="btn btn-outline-secondary settings-password-toggle" type="button" data-target="new_user_password" aria-label="Afficher le mot de passe">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
                         <small class="text-muted d-none" id="settings_user_password_help">Laissez vide pour conserver le mot de passe actuel.</small>
                     </div>
                     <div class="mb-3">
                         <label for="new_user_password_confirmation" class="form-label" id="settings_user_password_confirmation_label">Confirmer le mot de passe</label>
-                        <input type="password" name="password_confirmation" id="new_user_password_confirmation" class="form-control" required>
+                        <div class="input-group">
+                            <input type="password" name="password_confirmation" id="new_user_password_confirmation" class="form-control" required>
+                            <button class="btn btn-outline-secondary settings-password-toggle" type="button" data-target="new_user_password_confirmation" aria-label="Afficher la confirmation du mot de passe">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="row g-3">
                         <div class="col-md-6">
@@ -803,6 +946,19 @@
     const settingsUserStoreUrl = "{{ route('admin.users.store') }}";
     const settingsUserUpdateBase = "{{ url('admin/users') }}";
 
+    document.querySelectorAll('.settings-password-toggle').forEach(button => {
+        button.addEventListener('click', function() {
+            const input = document.getElementById(this.dataset.target);
+            const icon = this.querySelector('i');
+            const shouldShow = input.type === 'password';
+
+            input.type = shouldShow ? 'text' : 'password';
+            icon.classList.toggle('fa-eye', !shouldShow);
+            icon.classList.toggle('fa-eye-slash', shouldShow);
+            this.setAttribute('aria-label', shouldShow ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
+        });
+    });
+
     function toggleSettingsFormateurFields() {
         const isFormateur = settingsUserRole?.value === roleFormateurValue;
         settingsFormateurFields?.classList.toggle('d-none', !isFormateur);
@@ -869,6 +1025,12 @@
     document.querySelectorAll('.btn-delete-permission').forEach(button => {
         button.addEventListener('click', function() {
             confirmDeletion(this, 'Supprimer la permission', `Voulez-vous vraiment supprimer ${this.dataset.permissionName} ?`);
+        });
+    });
+
+    document.querySelectorAll('.btn-delete-salle').forEach(button => {
+        button.addEventListener('click', function() {
+            confirmDeletion(this, 'Supprimer la salle', `Voulez-vous vraiment supprimer ${this.dataset.salleName} ?`);
         });
     });
 

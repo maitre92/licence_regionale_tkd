@@ -25,11 +25,6 @@ class CheckPermission
 
         $user = Auth::user();
 
-        // Super admin peut accéder à tout
-        if ($user->isSuperAdmin()) {
-            return $next($request);
-        }
-
         // Création automatique de la permission si elle n'existe pas
         foreach ($permissions as $slug) {
             $exists = \App\Models\Permission::where('slug', $slug)->exists();
@@ -41,6 +36,7 @@ class CheckPermission
                 if (str_contains($slug, 'permission')) $module = 'Permissions';
                 if (str_contains($slug, 'apprenant') || str_contains($slug, 'learner')) $module = 'Apprenants';
                 if (str_contains($slug, 'formation') || str_contains($slug, 'course')) $module = 'Formations';
+                if (str_contains($slug, 'categorie') || str_contains($slug, 'category')) $module = 'Catégories de formation';
                 if (str_contains($slug, 'attestation')) $module = 'Attestations';
                 if (str_contains($slug, 'document')) $module = 'Documents';
                 if (str_contains($slug, 'rapport')) $module = 'Rapports';
@@ -58,6 +54,11 @@ class CheckPermission
                     'is_active' => true,
                 ]);
             }
+        }
+
+        // Super admin peut accéder à tout
+        if ($user->isSuperAdmin()) {
+            return $next($request);
         }
 
         // Vérifier les permissions

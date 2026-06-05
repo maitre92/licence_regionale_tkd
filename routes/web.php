@@ -95,6 +95,9 @@ Route::middleware('auth')->group(function () {
         // Paramètres
         Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
         Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
+        Route::post('/settings/salles', [SettingsController::class, 'storeSalle'])->name('settings.salles.store');
+        Route::put('/settings/salles/{salle}', [SettingsController::class, 'updateSalle'])->name('settings.salles.update');
+        Route::delete('/settings/salles/{salle}', [SettingsController::class, 'destroySalle'])->name('settings.salles.destroy');
         
         // Permissions
         Route::post('/permissions', [SettingsController::class, 'storePermission'])->name('permissions.store');
