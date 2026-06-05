@@ -36,6 +36,13 @@ class PermissionSeeder extends Seeder
             ['name' => 'Supprimer une formation', 'module' => 'Formations', 'slug' => 'supprimer_formation', 'action' => 'delete', 'order' => 33],
             ['name' => 'Voir les détails formation', 'module' => 'Formations', 'slug' => 'voir_details_formation', 'action' => 'view_details', 'order' => 34],
 
+            // Catégories de formation
+            ['name' => 'Voir les catégories de formation', 'module' => 'Catégories de formation', 'slug' => 'voir_categories_formations', 'action' => 'view', 'order' => 35],
+            ['name' => 'Ajouter une catégorie de formation', 'module' => 'Catégories de formation', 'slug' => 'ajouter_categorie_formation', 'action' => 'create', 'order' => 36],
+            ['name' => 'Modifier une catégorie de formation', 'module' => 'Catégories de formation', 'slug' => 'modifier_categorie_formation', 'action' => 'edit', 'order' => 37],
+            ['name' => 'Supprimer une catégorie de formation', 'module' => 'Catégories de formation', 'slug' => 'supprimer_categorie_formation', 'action' => 'delete', 'order' => 38],
+            ['name' => 'Gérer les catégories de formation', 'module' => 'Catégories de formation', 'slug' => 'gerer_categories_formations', 'action' => 'manage', 'order' => 39],
+
             // Pédagogique
             ['name' => 'Voir le module pédagogique', 'module' => 'Pédagogique', 'slug' => 'view_pedagogical'],
             ['name' => 'Voir les présences', 'module' => 'Présences', 'slug' => 'view_attendance'],

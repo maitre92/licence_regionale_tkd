@@ -76,7 +76,16 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Niveau</label>
-                                <input type="text" name="niveau" class="form-control" value="{{ old('niveau', $formation->niveau) }}">
+                                @php $selectedNiveau = old('niveau', $formation->niveau); @endphp
+                                <select name="niveau" class="form-select">
+                                    <option value="">Sélectionner un niveau...</option>
+                                    @foreach(['Débutant', 'Intermédiaire', 'Avancé'] as $niveau)
+                                        <option value="{{ $niveau }}" {{ $selectedNiveau === $niveau ? 'selected' : '' }}>{{ $niveau }}</option>
+                                    @endforeach
+                                    @if($selectedNiveau && !in_array($selectedNiveau, ['Débutant', 'Intermédiaire', 'Avancé'], true))
+                                        <option value="{{ $selectedNiveau }}" selected>{{ $selectedNiveau }}</option>
+                                    @endif
+                                </select>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Durée (Heures)</label>

@@ -13,8 +13,8 @@ class AdditionalPermissionsSeeder extends Seeder
             // Dashboard
             ['name' => 'Accéder au tableau de bord', 'slug' => 'access_dashboard', 'module' => 'dashboard', 'action' => 'view', 'order' => 1],
             
-            // Gérer catégories formations (missing in PermissionSeeder)
-            ['name' => 'Gérer catégories formations', 'slug' => 'gerer_categories_formations', 'module' => 'formations', 'action' => 'manage_categories', 'order' => 75],
+            // Gérer catégories formations
+            ['name' => 'Gérer les catégories de formation', 'slug' => 'gerer_categories_formations', 'module' => 'Catégories de formation', 'action' => 'manage', 'order' => 39],
         ];
         
         foreach ($additionalPermissions as $permission) {

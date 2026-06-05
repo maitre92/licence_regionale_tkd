@@ -46,7 +46,7 @@ class GroupeFormation extends Model
     public function formateurs()
     {
         return $this->belongsToMany(User::class, 'groupe_formation_formateur', 'groupe_formation_id', 'formateur_id')
-            ->withPivot('role', 'taux_commission', 'observations', 'assigned_at')
+            ->withPivot('role', 'taux_commission', 'commission_type', 'montant_commission', 'observations', 'assigned_at')
             ->withTimestamps();
     }
 

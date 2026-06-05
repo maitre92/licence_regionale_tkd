@@ -104,7 +104,16 @@
                 </div>
                 <div class="mb-3">
                     <label for="niveau" class="form-label">Niveau</label>
-                    <input type="text" class="form-control @error('niveau') is-invalid @enderror" id="niveau" name="niveau" value="{{ old('niveau', $formation->niveau) }}" placeholder="Débutant, intermédiaire...">
+                    @php $selectedNiveau = old('niveau', $formation->niveau); @endphp
+                    <select class="form-select @error('niveau') is-invalid @enderror" id="niveau" name="niveau">
+                        <option value="">Sélectionner un niveau...</option>
+                        @foreach(['Débutant', 'Intermédiaire', 'Avancé'] as $niveau)
+                            <option value="{{ $niveau }}" {{ $selectedNiveau === $niveau ? 'selected' : '' }}>{{ $niveau }}</option>
+                        @endforeach
+                        @if($selectedNiveau && !in_array($selectedNiveau, ['Débutant', 'Intermédiaire', 'Avancé'], true))
+                            <option value="{{ $selectedNiveau }}" selected>{{ $selectedNiveau }}</option>
+                        @endif
+                    </select>
                     @error('niveau')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
             </div>

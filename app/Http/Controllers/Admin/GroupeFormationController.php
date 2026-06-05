@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Formation;
 use App\Models\GroupeFormation;
+use App\Models\Salle;
 use App\Models\User;
 use App\Shared\Enums\UserRole;
 use Illuminate\Http\Request;
@@ -62,9 +63,10 @@ class GroupeFormationController extends Controller
         $formation = $request->formation_id ? Formation::findOrFail($request->formation_id) : null;
         $formations = Formation::orderBy('nom')->get();
         $formateurs = $this->availableFormateurs();
+        $salles = $this->availableSalles($formation?->salle);
         $page_title = 'Nouveau groupe de formation';
 
-        return view('admin.groupes-formations.create', compact('formation', 'formations', 'formateurs', 'page_title'));
+        return view('admin.groupes-formations.create', compact('formation', 'formations', 'formateurs', 'salles', 'page_title'));
     }
 
     public function store(Request $request)
@@ -73,12 +75,13 @@ class GroupeFormationController extends Controller
         $formateurIds = Arr::pull($validated, 'formateurs', []);
         $roles = Arr::pull($validated, 'formateur_roles', []);
         $commissions = Arr::pull($validated, 'formateur_commissions', []);
-        $observations = Arr::pull($validated, 'formateur_observations', []);
+        $commissionTypes = Arr::pull($validated, 'formateur_commission_types', []);
+        $commissionAmounts = Arr::pull($validated, 'formateur_commission_amounts', []);
 
         $validated['created_by'] = Auth::id();
 
         $groupe = GroupeFormation::create($validated);
-        $this->syncFormateurs($groupe, $formateurIds, $roles, $commissions, $observations);
+        $this->syncFormateurs($groupe, $formateurIds, $roles, $commissions, $commissionTypes, $commissionAmounts);
 
         return redirect()->route('admin.formations.show', $groupe->formation_id)
             ->with('success', 'Groupe de formation créé avec succès.');
@@ -89,21 +92,25 @@ class GroupeFormationController extends Controller
         $groupesFormation->load('formation', 'formateurs');
         $formateurs = $this->availableFormateurs();
         $formations = Formation::orderBy('nom')->get();
+        $salles = $this->availableSalles($groupesFormation->salle);
         $page_title = 'Modifier le groupe';
         $selectedFormateurs = $groupesFormation->formateurs->pluck('id')->toArray();
         $selectedRoles = $groupesFormation->formateurs->pluck('pivot.role', 'id')->toArray();
         $selectedCommissions = $groupesFormation->formateurs->pluck('pivot.taux_commission', 'id')->toArray();
-        $selectedObservations = $groupesFormation->formateurs->pluck('pivot.observations', 'id')->toArray();
+        $selectedCommissionTypes = $groupesFormation->formateurs->pluck('pivot.commission_type', 'id')->toArray();
+        $selectedCommissionAmounts = $groupesFormation->formateurs->pluck('pivot.montant_commission', 'id')->toArray();
 
         return view('admin.groupes-formations.edit', compact(
             'groupesFormation',
             'formations',
             'formateurs',
+            'salles',
             'page_title',
             'selectedFormateurs',
             'selectedRoles',
             'selectedCommissions',
-            'selectedObservations'
+            'selectedCommissionTypes',
+            'selectedCommissionAmounts'
         ));
     }
 
@@ -113,10 +120,11 @@ class GroupeFormationController extends Controller
         $formateurIds = Arr::pull($validated, 'formateurs', []);
         $roles = Arr::pull($validated, 'formateur_roles', []);
         $commissions = Arr::pull($validated, 'formateur_commissions', []);
-        $observations = Arr::pull($validated, 'formateur_observations', []);
+        $commissionTypes = Arr::pull($validated, 'formateur_commission_types', []);
+        $commissionAmounts = Arr::pull($validated, 'formateur_commission_amounts', []);
 
         $groupesFormation->update($validated);
-        $this->syncFormateurs($groupesFormation, $formateurIds, $roles, $commissions, $observations);
+        $this->syncFormateurs($groupesFormation, $formateurIds, $roles, $commissions, $commissionTypes, $commissionAmounts);
 
         return redirect()->route('admin.formations.show', $groupesFormation->formation_id)
             ->with('success', 'Groupe de formation mis à jour avec succès.');
@@ -155,19 +163,27 @@ class GroupeFormationController extends Controller
             'date_debut' => ['nullable', 'date'],
             'date_fin' => ['nullable', 'date', 'after_or_equal:date_debut'],
             'emploi_du_temps' => ['nullable', 'string'],
-            'observations' => ['nullable', 'string'],
             'formateurs' => ['nullable', 'array'],
             'formateurs.*' => ['exists:users,id'],
             'formateur_roles' => ['nullable', 'array'],
             'formateur_roles.*' => ['nullable', 'in:principal,assistant,intervenant'],
+            'formateur_commission_types' => ['nullable', 'array'],
+            'formateur_commission_types.*' => ['nullable', 'in:pourcentage,montant'],
             'formateur_commissions' => ['nullable', 'array'],
-            'formateur_commissions.*' => ['nullable', 'integer', 'min:0', 'max:100'],
-            'formateur_observations' => ['nullable', 'array'],
-            'formateur_observations.*' => ['nullable', 'string', 'max:1000'],
+            'formateur_commissions.*' => ['nullable', 'integer', 'in:20,30,40,50,60,70,80'],
+            'formateur_commission_amounts' => ['nullable', 'array'],
+            'formateur_commission_amounts.*' => ['nullable', 'numeric', 'min:0', 'max:999999999.99'],
         ]);
     }
 
-    private function syncFormateurs(GroupeFormation $groupe, array $formateurIds, array $roles, array $commissions, array $observations): void
+    private function syncFormateurs(
+        GroupeFormation $groupe,
+        array $formateurIds,
+        array $roles,
+        array $commissions,
+        array $commissionTypes,
+        array $commissionAmounts
+    ): void
     {
         $ids = collect($formateurIds)
             ->push($groupe->formateur_principal_id)
@@ -175,12 +191,16 @@ class GroupeFormationController extends Controller
             ->unique();
 
         $groupe->formateurs()->sync(
-            $ids->mapWithKeys(function ($id) use ($groupe, $roles, $commissions, $observations) {
+            $ids->mapWithKeys(function ($id) use ($groupe, $roles, $commissions, $commissionTypes, $commissionAmounts) {
+                $isPrincipal = (int) $id === (int) $groupe->formateur_principal_id;
+                $commissionType = $isPrincipal ? 'pourcentage' : ($commissionTypes[$id] ?? 'pourcentage');
+
                 return [
                     (int) $id => [
-                        'role' => ((int) $id === (int) $groupe->formateur_principal_id) ? 'principal' : ($roles[$id] ?? 'intervenant'),
-                        'taux_commission' => isset($commissions[$id]) && $commissions[$id] !== '' ? (int) $commissions[$id] : null,
-                        'observations' => $observations[$id] ?? null,
+                        'role' => $isPrincipal ? 'principal' : ($roles[$id] ?? 'intervenant'),
+                        'commission_type' => $commissionType,
+                        'taux_commission' => $commissionType === 'pourcentage' && isset($commissions[$id]) && $commissions[$id] !== '' ? (int) $commissions[$id] : null,
+                        'montant_commission' => $commissionType === 'montant' && isset($commissionAmounts[$id]) && $commissionAmounts[$id] !== '' ? (float) $commissionAmounts[$id] : null,
                         'assigned_at' => now(),
                     ],
                 ];
@@ -192,6 +212,16 @@ class GroupeFormationController extends Controller
     {
         return User::where('role', UserRole::FORMATEUR->value)
             ->orderBy('name')
+            ->get();
+    }
+
+    private function availableSalles(?string $currentSalle = null)
+    {
+        return Salle::where('is_active', true)
+            ->when($currentSalle, function ($query) use ($currentSalle) {
+                $query->orWhere('nom', $currentSalle);
+            })
+            ->orderBy('nom')
             ->get();
     }
 

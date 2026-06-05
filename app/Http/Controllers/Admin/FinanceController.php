@@ -251,13 +251,20 @@ class FinanceController extends Controller
             $total_contrats = $groupe->inscriptions->sum('montant_total');
             
             $formateurs = $groupe->formateurs->map(function($trainer) use ($groupe, $total_collecte, $total_contrats) {
+                $commissionType = $trainer->pivot->commission_type ?? 'pourcentage';
                 $percentage = $trainer->pivot->taux_commission ?? 0;
+                $fixedAmount = (float) ($trainer->pivot->montant_commission ?? 0);
                 
-                // Commission sur les contrats inscrits
-                $commission_contrat = ($total_contrats * $percentage) / 100;
-                
-                // Commission sur l'argent réellement collecté
-                $commission_acquise = ($total_collecte * $percentage) / 100;
+                if ($commissionType === 'montant') {
+                    $commission_contrat = $fixedAmount;
+                    $commission_acquise = $fixedAmount;
+                } else {
+                    // Commission sur les contrats inscrits
+                    $commission_contrat = ($total_contrats * $percentage) / 100;
+
+                    // Commission sur l'argent réellement collecté
+                    $commission_acquise = ($total_collecte * $percentage) / 100;
+                }
                 
                 // Déjà payé à ce formateur pour ce groupe
                 $deja_paye = Depense::where('user_id', $trainer->id)
@@ -271,7 +278,9 @@ class FinanceController extends Controller
                     'name' => $trainer->name,
                     'email' => $trainer->email,
                     'phone' => $trainer->phone,
+                    'commission_type' => $commissionType,
                     'percentage' => $percentage,
+                    'fixed_amount' => $fixedAmount,
                     'commission_contrat' => $commission_contrat,
                     'commission_acquise' => $commission_acquise,
                     'deja_paye' => $deja_paye,
@@ -315,8 +324,12 @@ class FinanceController extends Controller
         }
         
         $total_collecte = $groupeFormation->inscriptions->flatMap->paiements->sum('montant');
+        $commissionType = $trainer->pivot->commission_type ?? 'pourcentage';
         $percentage = $trainer->pivot->taux_commission ?? 0;
-        $commission_acquise = ($total_collecte * $percentage) / 100;
+        $fixedAmount = (float) ($trainer->pivot->montant_commission ?? 0);
+        $commission_acquise = $commissionType === 'montant'
+            ? $fixedAmount
+            : ($total_collecte * $percentage) / 100;
         
         $deja_paye = Depense::where('user_id', $request->user_id)
             ->where('groupe_formation_id', $request->groupe_formation_id)
@@ -355,7 +368,10 @@ class FinanceController extends Controller
             'montant' => $request->montant,
             'date_depense' => $request->date_paiement,
             'beneficiaire' => $trainer->name,
-            'description' => "Commission de " . $percentage . "% sur le groupe " . $groupeFormation->nom . ". Règlement via " . ucfirst($request->mode_paiement) . ($request->reference ? " (Réf: " . $request->reference . ")" : "") . ". Notes: " . $request->notes,
+            'description' => ($commissionType === 'montant'
+                ? "Commission fixe de " . number_format($fixedAmount, 0, ',', ' ') . " FCFA sur le groupe " . $groupeFormation->nom
+                : "Commission de " . $percentage . "% sur le groupe " . $groupeFormation->nom)
+                . ". Règlement via " . ucfirst($request->mode_paiement) . ($request->reference ? " (Réf: " . $request->reference . ")" : "") . ". Notes: " . $request->notes,
             'formation_id' => $groupeFormation->formation_id,
             'groupe_formation_id' => $groupeFormation->id,
             'user_id' => $request->user_id,
