@@ -40,7 +40,7 @@
                             <span id="summary_percentage" class="fw-bold text-dark">0%</span>
                         </div>
                         <div class="d-flex justify-content-between mb-2 small">
-                            <span class="text-muted">Total Encaissé (Élèves) :</span>
+                            <span class="text-muted">Total Encaissé (Formation) :</span>
                             <span id="summary_total_collecte" class="fw-bold text-dark">0 FCFA</span>
                         </div>
                         <hr class="my-2 bg-secondary opacity-25">

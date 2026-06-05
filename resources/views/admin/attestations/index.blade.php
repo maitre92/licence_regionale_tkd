@@ -23,12 +23,12 @@
                             <tr>
                                 <td><span class="badge bg-light text-dark border">{{ $att->reference }}</span></td>
                                 <td>
-                                    <div class="fw-bold">{{ $att->apprenant->nom_complet }}</div>
-                                    <small class="text-muted">{{ $att->apprenant->matricule }}</small>
+                                    <div class="fw-bold">{{ $att->apprenant->nom_complet ??'apprenant non défini' }}</div>
+                                    <small class="text-muted">{{ $att->apprenant->matricule ??'matricule non défini' }}</small>
                                 </td>
                                 <td>
                                     <div class="fw-bold">{{ $att->groupeFormation->nom ?? 'Groupe non défini' }}</div>
-                                    <small class="text-muted">{{ $att->formation->nom }}</small>
+                                    <small class="text-muted">{{ $att->formation->nom ?? 'Formation non définie' }}</small>
                                 </td>
                                 <td>{{ $att->date_emission->format('d/m/Y') }}</td>
                                 <td class="text-end">

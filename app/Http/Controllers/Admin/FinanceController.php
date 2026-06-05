@@ -266,8 +266,8 @@ class FinanceController extends Controller
 
     public function trainerPayments()
     {
-        // Charger les groupes qui ont des formateurs et charger avec inscriptions.paiements
-        $groupesFormation = GroupeFormation::with(['formation', 'formateurs', 'inscriptions.paiements'])
+        // Charger les groupes qui ont des formateurs et charger avec inscriptions.paiements et inscriptions.formation
+        $groupesFormation = GroupeFormation::with(['formation', 'formateurs', 'inscriptions.paiements', 'inscriptions.formation'])
             ->whereHas('formateurs')
             ->get();
             
@@ -279,10 +279,19 @@ class FinanceController extends Controller
             
         // Construire les données JSON préchargées pour le JS
         $formationsData = $groupesFormation->map(function($groupe) {
-            $total_collecte = $groupe->inscriptions->flatMap->paiements->sum('montant');
-            $total_contrats = $groupe->inscriptions->sum('montant_total');
+            // Calculer le total collecté uniquement sur les frais de formation (exclure les frais d'inscription)
+            $total_collecte_formation = $groupe->inscriptions->sum(function($ins) {
+                $frais_insc = $ins->formation->frais_inscription ?? 0;
+                $cout_formation = $ins->formation->cout ?? 0;
+                return min($cout_formation, max(0, $ins->montant_paye - $frais_insc));
+            });
             
-            $formateurs = $groupe->formateurs->map(function($trainer) use ($groupe, $total_collecte, $total_contrats) {
+            // Calculer le total des contrats uniquement sur les frais de formation
+            $total_contrats_formation = $groupe->inscriptions->sum(function($ins) {
+                return $ins->formation->cout ?? 0;
+            });
+            
+            $formateurs = $groupe->formateurs->map(function($trainer) use ($groupe, $total_collecte_formation, $total_contrats_formation) {
                 $commissionType = $trainer->pivot->commission_type ?? 'pourcentage';
                 $percentage = $trainer->pivot->taux_commission ?? 0;
                 $fixedAmount = (float) ($trainer->pivot->montant_commission ?? 0);
@@ -291,11 +300,11 @@ class FinanceController extends Controller
                     $commission_contrat = $fixedAmount;
                     $commission_acquise = $fixedAmount;
                 } else {
-                    // Commission sur les contrats inscrits
-                    $commission_contrat = ($total_contrats * $percentage) / 100;
+                    // Commission sur les contrats inscrits (seulement frais de formation)
+                    $commission_contrat = ($total_contrats_formation * $percentage) / 100;
 
-                    // Commission sur l'argent réellement collecté
-                    $commission_acquise = ($total_collecte * $percentage) / 100;
+                    // Commission sur l'argent réellement collecté (seulement frais de formation)
+                    $commission_acquise = ($total_collecte_formation * $percentage) / 100;
                 }
                 
                 // Déjà payé à ce formateur pour ce groupe
@@ -325,8 +334,8 @@ class FinanceController extends Controller
                 'nom' => $groupe->nom,
                 'code' => $groupe->code,
                 'formation_nom' => $groupe->formation->nom ?? '',
-                'total_collecte' => $total_collecte,
-                'total_contrats' => $total_contrats,
+                'total_collecte' => $total_collecte_formation,
+                'total_contrats' => $total_contrats_formation,
                 'formateurs' => $formateurs
             ];
         });
@@ -348,20 +357,26 @@ class FinanceController extends Controller
         
         $groupeFormation = GroupeFormation::with(['formation', 'formateurs' => function($q) use ($request) {
             $q->where('users.id', $request->user_id);
-        }, 'inscriptions.paiements'])->findOrFail($request->groupe_formation_id);
+        }, 'inscriptions.paiements', 'inscriptions.formation'])->findOrFail($request->groupe_formation_id);
         
         $trainer = $groupeFormation->formateurs->first();
         if (!$trainer) {
             return redirect()->back()->withErrors(['user_id' => 'Le formateur sélectionné n\'est pas associé à ce groupe.']);
         }
         
-        $total_collecte = $groupeFormation->inscriptions->flatMap->paiements->sum('montant');
+        // Calculer le total collecté uniquement sur les frais de formation (exclure les frais d'inscription)
+        $total_collecte_formation = $groupeFormation->inscriptions->sum(function($ins) {
+            $frais_insc = $ins->formation->frais_inscription ?? 0;
+            $cout_formation = $ins->formation->cout ?? 0;
+            return min($cout_formation, max(0, $ins->montant_paye - $frais_insc));
+        });
+        
         $commissionType = $trainer->pivot->commission_type ?? 'pourcentage';
         $percentage = $trainer->pivot->taux_commission ?? 0;
         $fixedAmount = (float) ($trainer->pivot->montant_commission ?? 0);
         $commission_acquise = $commissionType === 'montant'
             ? $fixedAmount
-            : ($total_collecte * $percentage) / 100;
+            : ($total_collecte_formation * $percentage) / 100;
         
         $deja_paye = Depense::where('user_id', $request->user_id)
             ->where('groupe_formation_id', $request->groupe_formation_id)

@@ -17,8 +17,8 @@
         {{-- Dynamic CSS variables as requested --}}
         <style>
             :root {
-                --participant-name: "{{ $attestation->apprenant->nom_complet }}";
-                --module-name: "{{ $attestation->formation->nom }}";
+                --participant-name: "{{ $attestation->apprenant->nom_complet ?? 'attestation non défini'  }}";
+                --module-name: "{{ $attestation->formation->nom ?? 'Formation non définie' }}";
                 --date-debut: "{{ $attestation->groupeFormation?->date_debut ? $attestation->groupeFormation->date_debut->format('d/m/Y') : '...' }}";
                 --date-fin: "{{ $attestation->groupeFormation?->date_fin ? $attestation->groupeFormation->date_fin->format('d/m/Y') : '...' }}";
                 --ville: "BAMAKO";
@@ -102,7 +102,7 @@
             {{-- TEXTE DE VALIDATION --}}
             <p class="cert-validation">
                 A suivi (e) avec <strong>succès et assiduité</strong> une formation pratique sur le module<br>
-                <strong>{{ $attestation->formation->nom }}</strong><br>
+                <strong>{{ $attestation->formation->nom ?? 'Formation non définie' }}</strong><br>
                 à la date du
                 <strong>
                     {{ $attestation->groupeFormation?->date_debut ? $attestation->groupeFormation->date_debut->format('d/m/Y') : '...' }}
