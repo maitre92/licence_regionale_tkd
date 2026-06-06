@@ -338,12 +338,12 @@
 
         .qr {
             position: absolute;
-            top: 74mm;
-            right: 22mm;
+            top: 68mm;
+            left: 16mm;
             width: 35mm;
-            padding: 2mm;
-            border: .45mm solid #e3e6ee;
-            background: #fff;
+            padding: 0;
+            border: 0;
+            background: transparent;
             text-align: center;
         }
 

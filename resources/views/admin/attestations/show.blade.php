@@ -479,14 +479,13 @@
 
     .verification-card {
         position: absolute;
-        top: 286px;
-        right: 76px;
+        top: 257px;
+        left: -18px;
         width: 164px;
-        padding: 9px 8px 8px;
-        border: 2px solid rgba(25, 16, 98, .13);
-        border-radius: 7px;
-        background: rgba(255, 255, 255, .96);
-        box-shadow: 0 8px 22px rgba(25, 16, 98, .08);
+        padding: 0;
+        border: 0;
+        background: transparent;
+        box-shadow: none;
         font-family: Arial, Helvetica, sans-serif;
         color: #102c66;
     }
