@@ -45,6 +45,7 @@ class CheckPermission
                 if (str_contains($slug, 'paiement') || str_contains($slug, 'payment')) $module = 'Paiements';
                 if (str_contains($slug, 'depense') || str_contains($slug, 'expense')) $module = 'Dépenses';
                 if (str_contains($slug, 'recette') || str_contains($slug, 'revenue')) $module = 'Recettes';
+                if (str_contains($slug, 'movement') || str_contains($slug, 'mouvement')) $module = 'Mouvements';
                 if (str_contains($slug, 'emploi') || str_contains($slug, 'schedule')) $module = 'Emplois du Temps';
                 if (str_contains($slug, 'parametre') || str_contains($slug, 'setting')) $module = 'Paramètres';
                 \App\Models\Permission::create([

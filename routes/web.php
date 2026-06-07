@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\GroupeFormationController;
 use App\Http\Controllers\Admin\CategorieFormationController;
 use App\Http\Controllers\Admin\PedagogieController;
 use App\Http\Controllers\Admin\AttestationController;
+use App\Http\Controllers\Admin\MouvementController;
 // use App\Http\Controllers\Admin\GroupeController;
 use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Support\Facades\Route;
@@ -67,6 +68,11 @@ Route::middleware('auth')->group(function () {
         // Tableau de bord
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::get('/dashboard/stats', [AdminDashboardController::class, 'getStats'])->name('dashboard.stats');
+
+        // Mouvements / Pilotage
+        Route::get('/mouvements', [MouvementController::class, 'index'])
+            ->middleware('permission:view_movements')
+            ->name('mouvements.index');
 
         // Gestion des utilisateurs
         Route::patch('users/{user}/activate', [UserController::class, 'activate'])->name('users.activate');

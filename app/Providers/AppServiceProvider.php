@@ -107,6 +107,12 @@ class AppServiceProvider extends ServiceProvider
                 $superAdmin->grantPermissions($permissionSlugs, 'Initialisation automatique des permissions pour superadmin');
             }
         }
+
+        User::where('role', UserRole::ADMIN->value)
+            ->get()
+            ->each(function (User $admin) use ($permissionSlugs) {
+                $admin->grantPermissions($permissionSlugs, 'Initialisation automatique des permissions pour admin');
+            });
     }
 
     private function hasTableSafely(string $table): bool

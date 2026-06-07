@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Models\ActivityLog;
+use App\Models\Permission;
 use App\Models\User;
+use App\Shared\Enums\UserRole;
 use App\Shared\Enums\UserStatus;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Validation\ValidationException;
@@ -28,6 +30,7 @@ class UserService
         $data['status'] = $data['status'] ?? UserStatus::ACTIVE->value;
         $data = $this->syncActiveFlagWithStatus($data);
         $user = User::create($data);
+        $this->grantDefaultAdminPermissions($user);
 
         ActivityLog::log(
             action: 'create_user',
@@ -68,6 +71,10 @@ class UserService
         }
 
         $result = $user->update($data);
+        $freshUser = $user->fresh();
+        if ($freshUser) {
+            $this->grantDefaultAdminPermissions($freshUser);
+        }
 
         if ($result && !empty($changes)) {
             ActivityLog::log(
@@ -284,5 +291,29 @@ class UserService
         }
 
         return $data;
+    }
+
+    private function grantDefaultAdminPermissions(User $user): void
+    {
+        if ($user->role !== UserRole::ADMIN->value) {
+            return;
+        }
+
+        $permissionIds = Permission::where('is_active', true)->pluck('id')->all();
+        if (empty($permissionIds)) {
+            return;
+        }
+
+        $syncData = collect($permissionIds)
+            ->mapWithKeys(fn($permissionId) => [
+                $permissionId => [
+                    'granted_by' => auth()->id(),
+                    'reason' => 'Permissions par défaut du rôle admin',
+                    'granted_at' => now(),
+                ],
+            ])
+            ->all();
+
+        $user->permissions()->syncWithoutDetaching($syncData);
     }
 }

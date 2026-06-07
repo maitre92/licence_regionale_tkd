@@ -72,6 +72,9 @@ class PermissionSeeder extends Seeder
             // Rapports
             ['name' => 'Voir les rapports', 'module' => 'Rapports', 'slug' => 'view_reports'],
 
+            // Mouvements / Pilotage
+            ['name' => 'Voir les mouvements et le pilotage', 'module' => 'Mouvements', 'slug' => 'view_movements'],
+
             // Traçabilité
             ['name' => 'Voir la traçabilité', 'module' => 'Traçabilité', 'slug' => 'view_audit'],
 
@@ -86,8 +89,21 @@ class PermissionSeeder extends Seeder
                 if ($existing->trashed()) {
                     $existing->restore();
                 }
+
+                $nameAlreadyUsed = Permission::where('name', $permission['name'])
+                    ->where('id', '!=', $existing->id)
+                    ->exists();
+
+                if ($nameAlreadyUsed) {
+                    unset($permission['name']);
+                }
+
                 $existing->update($permission);
             } else {
+                if (Permission::where('name', $permission['name'])->exists()) {
+                    $permission['name'] = $permission['name'] . ' (' . $permission['slug'] . ')';
+                }
+
                 Permission::create($permission);
             }
         }

@@ -27,6 +27,7 @@
                 $canViewPayments = $user && ($user->isSuperAdmin() || $user->hasPermission('view_payments'));
                 $canViewExpenses = $user && ($user->isSuperAdmin() || $user->hasPermission('view_expenses'));
                 $canViewRevenue = $user && ($user->isSuperAdmin() || $user->hasPermission('view_revenue'));
+                $canViewMovements = $user && ($user->isSuperAdmin() || $user->hasPermission('view_movements'));
                 $canViewCertificates = $user && ($user->isSuperAdmin() || $user->hasPermission('view_certificates'));
             @endphp
 
@@ -164,6 +165,14 @@
                         @endif
                     </div>
                 </div>
+            @endif
+
+            <!-- Mouvements / Pilotage -->
+            @if($user && $canViewMovements)
+                <a class="nav-link {{ request()->routeIs('admin.mouvements.*') ? 'active' : '' }}" 
+                   href="{{ route('admin.mouvements.index') }}">
+                    <i class="fas fa-gauge-high"></i> <span class="nav-text">Mouvements / Pilotage</span>
+                </a>
             @endif
 
             <!-- Attestations -->
