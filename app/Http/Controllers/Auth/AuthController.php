@@ -41,9 +41,9 @@ class AuthController extends Controller
         $credentials = $request->validated();
         $remember = $request->boolean('remember');
 
-        if (!$this->authService->login($credentials['email'], $credentials['password'], $remember)) {
+        if (!$this->authService->login($credentials['phone'], $credentials['password'], $remember)) {
             return back()
-                ->withInput($request->only('email'))
+                ->withInput($request->only('phone'))
                 ->with('error', 'Les identifiants fournis sont incorrects ou le compte n\'est pas actif.');
         }
 

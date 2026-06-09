@@ -7,7 +7,6 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Shared\Traits\HasPermissions;
 use App\Shared\Enums\UserRole;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * @method bool hasPermission(string $permission)
@@ -25,9 +24,6 @@ class User extends Authenticatable
         'email',
         'password',
         'phone',
-        'specialite',
-        'diplome',
-        'adresse',
         'avatar',
         'role',
         'status',
@@ -97,19 +93,5 @@ class User extends Authenticatable
         return $this->permissions()
             ->where('is_active', true)
             ->exists();
-    }
-
-    public function formationsAnimees(): BelongsToMany
-    {
-        return $this->belongsToMany(Formation::class, 'formation_formateur')
-            ->withPivot('role', 'pourcentage_commission', 'assigned_at')
-            ->withTimestamps();
-    }
-
-    public function groupesFormationAnimees(): BelongsToMany
-    {
-        return $this->belongsToMany(GroupeFormation::class, 'groupe_formation_formateur', 'formateur_id', 'groupe_formation_id')
-            ->withPivot('role', 'taux_commission', 'commission_type', 'montant_commission', 'observations', 'assigned_at')
-            ->withTimestamps();
     }
 }

@@ -110,6 +110,8 @@ class UserController extends Controller
     public function create(): View
     {
         return view('admin.users.create', [
+            'roles' => collect(UserRole::assignableBy(auth()->user()))->mapWithKeys(fn($role) => [$role->value => $role->label()])->toArray(),
+            'statuses' => collect(UserStatus::cases())->mapWithKeys(fn($status) => [$status->value => $status->label()])->toArray(),
             'page_title' => 'Créer un utilisateur',
             'active_menu' => 'users',
         ]);
@@ -168,6 +170,8 @@ class UserController extends Controller
         $this->authorizeTarget($user);
         return view('admin.users.edit', [
             'user' => $user,
+            'roles' => collect(UserRole::assignableBy(auth()->user()))->mapWithKeys(fn($role) => [$role->value => $role->label()])->toArray(),
+            'statuses' => collect(UserStatus::cases())->mapWithKeys(fn($status) => [$status->value => $status->label()])->toArray(),
             'page_title' => 'Modifier ' . $user->name,
             'active_menu' => 'users',
         ]);

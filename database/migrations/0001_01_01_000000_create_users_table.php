@@ -17,9 +17,9 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->string('phone')->nullable();
+            $table->string('phone')->nullable()->unique();
             $table->string('avatar')->nullable();
-            $table->enum('role', ['superadmin', 'admin', 'manager', 'user', 'guest', 'formateur', 'personnel_administratif', 'comptable', 'directeur'])->default('user');
+            $table->enum('role', ['superadmin', 'admin', 'manager', 'user', 'guest'])->default('user');
             $table->enum('status', ['active', 'inactive', 'pending', 'suspended', 'banned'])->default('pending');
             $table->boolean('is_active')->default(false);
             $table->timestamp('last_login_at')->nullable();

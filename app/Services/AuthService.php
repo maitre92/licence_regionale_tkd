@@ -32,25 +32,25 @@ class AuthService
     }
 
     /**
-     * Se connecter avec email et mot de passe
+     * Se connecter avec téléphone et mot de passe
      */
-    public function login(string $email, string $password, bool $remember = false): bool
+    public function login(string $phone, string $password, bool $remember = false): bool
     {
-        $user = $this->userService->findByEmail($email);
+        $user = $this->userService->findByPhone($phone);
 
         if (!$user) {
-            Log::warning('AuthService: login failed - user not found', ['email' => $email]);
+            Log::warning('AuthService: login failed - user not found', ['phone' => $phone]);
             return false;
         }
 
         $hashOk = Hash::check($password, $user->password);
         if (!$hashOk) {
-            Log::warning('AuthService: login failed - invalid password', ['email' => $email]);
+            Log::warning('AuthService: login failed - invalid password', ['phone' => $phone]);
             return false;
         }
 
         if (!$user->is_active || $user->status !== UserStatus::ACTIVE->value) {
-            Log::warning('AuthService: login failed - inactive or wrong status', ['email' => $email, 'is_active' => $user->is_active, 'status' => $user->status]);
+            Log::warning('AuthService: login failed - inactive or wrong status', ['phone' => $phone, 'is_active' => $user->is_active, 'status' => $user->status]);
             return false;
         }
 

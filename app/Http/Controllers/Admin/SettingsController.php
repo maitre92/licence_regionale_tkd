@@ -4,13 +4,14 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Permission;
-use App\Models\Salle;
 use App\Models\User;
+use App\Support\CardSettings;
 use App\Shared\Enums\UserRole;
 use App\Shared\Enums\UserStatus;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -44,8 +45,24 @@ class SettingsController extends Controller
             ->get();
 
         $permissionSearch = request('permission_search');
+        $visiblePermissionSlugs = [
+            'view_users',
+            'create_user',
+            'edit_user',
+            'delete_user',
+            'view_permissions',
+            'manage_permissions',
+            'create_permission',
+            'delete_permission',
+            'view_licence_holders',
+            'create_licence_holder',
+            'edit_licence_holder',
+            'delete_licence_holder',
+            'manage_settings',
+        ];
 
         $allPermissions = Permission::where('is_active', true)
+            ->whereIn('slug', $visiblePermissionSlugs)
             ->orderBy('module')
             ->orderBy('order')
             ->get();
@@ -54,98 +71,17 @@ class SettingsController extends Controller
 
         // Grouper les permissions par module
         $permissionsByModule = $allPermissions->groupBy('module');
-        $salles = Salle::orderBy('nom')->get();
-
         return view('admin.settings', [
             'users' => $users,
             'permissions' => $permissions,
             'permissionsByModule' => $permissionsByModule,
-            'salles' => $salles,
             'permissionSearch' => $permissionSearch,
+            'cardSettings' => CardSettings::all(),
             'roles' => collect(UserRole::assignableBy($currentUser))->mapWithKeys(fn($role) => [$role->value => $role->label()])->toArray(),
             'statuses' => collect(UserStatus::cases())->mapWithKeys(fn($status) => [$status->value => $status->label()])->toArray(),
             'page_title' => 'Paramètres',
             'active_menu' => 'settings',
         ]);
-    }
-
-    public function storeSalle(Request $request): RedirectResponse
-    {
-        $validated = $request->validate([
-            'nom' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'capacite' => ['nullable', 'integer', 'min:0', 'max:100000'],
-            'is_active' => ['nullable', 'boolean'],
-        ], [
-            'nom.required' => 'Le nom de la salle est obligatoire.',
-        ]);
-
-        $validated['is_active'] = $request->boolean('is_active', true);
-        $validated['slug'] = Str::slug($validated['nom']);
-
-        $existingSalle = Salle::withTrashed()
-            ->where('nom', $validated['nom'])
-            ->orWhere('slug', $validated['slug'])
-            ->first();
-
-        if ($existingSalle) {
-            if ($existingSalle->trashed()) {
-                $existingSalle->restore();
-                $existingSalle->update($validated);
-
-                return redirect()->route('admin.settings', ['tab' => 'salles-list'])
-                    ->with('success', 'Salle restaurée avec succès');
-            }
-
-            return redirect()->route('admin.settings', ['tab' => 'salles-list'])
-                ->withInput()
-                ->with('warning', 'Cette salle existe déjà.');
-        }
-
-        Salle::create($validated);
-
-        return redirect()->route('admin.settings', ['tab' => 'salles-list'])
-            ->with('success', 'Salle créée avec succès');
-    }
-
-    public function updateSalle(Request $request, Salle $salle): RedirectResponse
-    {
-        $validated = $request->validate([
-            'nom' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('salles', 'nom')->ignore($salle->id),
-            ],
-            'description' => ['nullable', 'string'],
-            'capacite' => ['nullable', 'integer', 'min:0', 'max:100000'],
-            'is_active' => ['nullable', 'boolean'],
-        ], [
-            'nom.required' => 'Le nom de la salle est obligatoire.',
-            'nom.unique' => 'Cette salle existe déjà.',
-        ]);
-
-        $validated['is_active'] = $request->boolean('is_active');
-        $validated['slug'] = Str::slug($validated['nom']);
-
-        if (Salle::where('slug', $validated['slug'])->whereKeyNot($salle->id)->exists()) {
-            return redirect()->route('admin.settings', ['tab' => 'salles-list'])
-                ->withInput()
-                ->with('warning', 'Une salle avec un nom équivalent existe déjà.');
-        }
-
-        $salle->update($validated);
-
-        return redirect()->route('admin.settings', ['tab' => 'salles-list'])
-            ->with('success', 'Salle mise à jour avec succès');
-    }
-
-    public function destroySalle(Salle $salle): RedirectResponse
-    {
-        $salle->delete();
-
-        return redirect()->route('admin.settings', ['tab' => 'salles-list'])
-            ->with('success', 'Salle supprimée avec succès');
     }
 
     /**
@@ -289,18 +225,111 @@ class SettingsController extends Controller
      */
     public function update(Request $request)
     {
-        $validated = $request->validate([
-            'app_name' => 'required|string|max:255',
-            'app_description' => 'nullable|string',
-            'items_per_page' => 'required|integer|min:5|max:100',
-        ]);
+        $section = $request->input('settings_section');
+        $settings = [];
 
-        // Sauvegarder les paramètres (exemple avec cache ou DB)
-        foreach ($validated as $key => $value) {
-            cache(["setting.$key" => $value]);
+        if ($section === 'official-info') {
+            $validated = $request->validate([
+                'ministry' => ['required', 'string', 'max:255'],
+                'federation' => ['required', 'string', 'max:255'],
+                'league' => ['required', 'string', 'max:255'],
+                'motto' => ['nullable', 'string', 'max:255'],
+            ]);
+
+            $settings['official'] = [
+                'ministry' => $validated['ministry'],
+                'federation' => $validated['federation'],
+                'league' => $validated['league'],
+                'motto' => $validated['motto'] ?? '',
+            ];
+        } elseif ($section === 'signature') {
+            $request->validate([
+                'signature' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+                'signature_data' => ['nullable', 'string'],
+            ]);
+
+            if ($request->hasFile('signature')) {
+                $settings['signature_path'] = CardSettings::storeFile($request->file('signature'), 'card-settings/signatures');
+            }
+
+            if ($request->filled('signature_data')) {
+                $settings['signature_path'] = $this->storeSignatureData($request->string('signature_data')->toString());
+            }
+        } elseif ($section === 'card-models') {
+            $validated = $request->validate([
+                'default_template' => ['required', Rule::in(['classic', 'modern', 'minimal'])],
+            ]);
+
+            $settings['card']['default_template'] = $validated['default_template'];
+        } elseif ($section === 'appearance') {
+            $validated = $request->validate([
+                'primary_color' => ['required', 'string', 'max:20'],
+                'secondary_color' => ['required', 'string', 'max:20'],
+                'background_color' => ['required', 'string', 'max:20'],
+                'background_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+                'decorative_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+                'remove_background_image' => ['nullable', 'boolean'],
+                'remove_decorative_image' => ['nullable', 'boolean'],
+            ]);
+
+            $currentSettings = CardSettings::all();
+            $settings['card'] = [
+                'primary_color' => $validated['primary_color'],
+                'secondary_color' => $validated['secondary_color'],
+                'background_color' => $validated['background_color'],
+            ];
+
+            if ($request->boolean('remove_background_image')) {
+                $this->deleteCardSettingFile($currentSettings['card']['background_image_path'] ?? null);
+                $settings['card']['background_image_path'] = null;
+            }
+
+            if ($request->hasFile('background_image')) {
+                $this->deleteCardSettingFile($currentSettings['card']['background_image_path'] ?? null);
+                $settings['card']['background_image_path'] = CardSettings::storeFile($request->file('background_image'), 'card-settings/backgrounds');
+            }
+
+            if ($request->boolean('remove_decorative_image')) {
+                $this->deleteCardSettingFile($currentSettings['card']['decorative_image_path'] ?? null);
+                $settings['card']['decorative_image_path'] = null;
+            }
+
+            if ($request->hasFile('decorative_image')) {
+                $this->deleteCardSettingFile($currentSettings['card']['decorative_image_path'] ?? null);
+                $settings['card']['decorative_image_path'] = CardSettings::storeFile($request->file('decorative_image'), 'card-settings/decorations');
+            }
+        } else {
+            abort(422, 'Module de paramètres invalide.');
         }
 
-        return redirect()->route('admin.settings')
+        CardSettings::save($settings);
+
+        return redirect()->route('admin.settings', ['tab' => $section])
             ->with('success', 'Paramètres mis à jour avec succès');
+    }
+
+    private function storeSignatureData(string $dataUri): string
+    {
+        if (!preg_match('/^data:image\/png;base64,/', $dataUri)) {
+            abort(422, 'Signature invalide.');
+        }
+
+        $content = base64_decode(substr($dataUri, strpos($dataUri, ',') + 1), true);
+
+        if ($content === false) {
+            abort(422, 'Signature invalide.');
+        }
+
+        $path = 'card-settings/signatures/signature-' . Str::uuid() . '.png';
+        Storage::disk('public')->put($path, $content);
+
+        return $path;
+    }
+
+    private function deleteCardSettingFile(?string $path): void
+    {
+        if ($path && Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
+        }
     }
 }

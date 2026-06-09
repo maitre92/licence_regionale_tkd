@@ -12,10 +12,6 @@ enum UserRole: string
     case MANAGER = 'manager';
     case USER = 'user';
     case GUEST = 'guest';
-    case FORMATEUR = 'formateur';
-    case PERSONNEL_ADMINISTRATIF = 'personnel_administratif';
-    case COMPTABLE = 'comptable';
-    case DIRECTEUR = 'directeur';
 
     public function label(): string
     {
@@ -25,10 +21,6 @@ enum UserRole: string
             self::MANAGER => 'Gestionnaire',
             self::USER => 'Utilisateur',
             self::GUEST => 'Invité',
-            self::FORMATEUR => 'Formateur',
-            self::PERSONNEL_ADMINISTRATIF => 'Personnel Administratif',
-            self::COMPTABLE => 'Comptable',
-            self::DIRECTEUR => 'Directeur',
         };
     }
 
@@ -36,14 +28,10 @@ enum UserRole: string
     {
         return match ($this) {
             self::SUPERADMIN => ['*'],
-            self::ADMIN => ['manage.users', 'manage.settings', 'view.reports', 'manage.content'],
-            self::MANAGER => ['manage.content', 'view.reports', 'manage.team'],
-            self::USER => ['view.content', 'edit.own'],
-            self::GUEST => ['view.content'],
-            self::FORMATEUR => ['view.courses', 'manage.own_courses', 'view.students'],
-            self::PERSONNEL_ADMINISTRATIF => ['manage.users', 'view.reports'],
-            self::COMPTABLE => ['manage.finances', 'view.reports'],
-            self::DIRECTEUR => ['view.reports', 'manage.settings', 'manage.users', 'manage.finances'],
+            self::ADMIN => ['manage.users', 'manage.settings', 'manage.cards'],
+            self::MANAGER => ['manage.cards'],
+            self::USER => ['view.cards'],
+            self::GUEST => ['view.cards'],
         };
     }
 
@@ -55,10 +43,6 @@ enum UserRole: string
             self::MANAGER => 3,
             self::USER => 2,
             self::GUEST => 1,
-            self::DIRECTEUR => 4,
-            self::COMPTABLE => 3,
-            self::PERSONNEL_ADMINISTRATIF => 3,
-            self::FORMATEUR => 2,
         };
     }
 
@@ -90,9 +74,6 @@ enum UserRole: string
 
     public static function assignableBy(?\App\Models\User $user): array
     {
-        return array_values(array_filter(
-            self::visibleBy($user),
-            fn (self $role) => !in_array($role, [self::USER, self::GUEST], true)
-        ));
+        return self::visibleBy($user);
     }
 }

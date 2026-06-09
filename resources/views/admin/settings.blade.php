@@ -3,1171 +3,618 @@
 @section('title', 'Paramètres')
 
 @section('content')
-<div class="row h-100">
-    <!-- Colonne Gauche - Menu -->
+@php
+    $activeTab = request('tab', 'official-info');
+    $settings = $cardSettings ?? \App\Support\CardSettings::all();
+@endphp
+
+<div class="row">
     <div class="col-md-3">
-        <div class="card">
-            <div class="card-header settings-sidebar-header text-white">
-                <h5 class="mb-0">
-                    <i class="fas fa-bars"></i> Menu
-                </h5>
+        <div class="card border-0 shadow-sm">
+            <div class="card-header text-white" style="background-color: var(--navbar-bg);">
+                <h5 class="mb-0"><i class="fas fa-bars"></i> Menu</h5>
             </div>
-            <div class="list-group list-group-flush">
+            <div class="list-group list-group-flush settings-nav">
+                <a href="#" class="list-group-item list-group-item-action settings-menu-item" data-target="official-info">
+                    <i class="fas fa-landmark"></i> Informations officielles
+                </a>
+                <a href="#" class="list-group-item list-group-item-action settings-menu-item" data-target="signature">
+                    <i class="fas fa-signature"></i> Signature électronique
+                </a>
+                <a href="#" class="list-group-item list-group-item-action settings-menu-item" data-target="card-models">
+                    <i class="fas fa-id-card"></i> Modèles de cartes
+                </a>
+                <a href="#" class="list-group-item list-group-item-action settings-menu-item" data-target="appearance">
+                    <i class="fas fa-palette"></i> Apparence
+                </a>
                 <a href="#" class="list-group-item list-group-item-action settings-menu-item" data-target="users-list">
-                    <i class="fas fa-list"></i> Liste Utilisateurs
+                    <i class="fas fa-users"></i> Utilisateurs
                 </a>
                 <a href="#" class="list-group-item list-group-item-action settings-menu-item" data-target="permissions-list">
-                    <i class="fas fa-th-list"></i> Liste Permissions
+                    <i class="fas fa-key"></i> Permissions
                 </a>
                 <a href="#" class="list-group-item list-group-item-action settings-menu-item" data-target="permissions-assign">
-                    <i class="fas fa-user-check"></i> Assigner Permissions
-                </a>
-                <a href="#" class="list-group-item list-group-item-action settings-menu-item" data-target="salles-list">
-                    <i class="fas fa-door-open"></i> Salles
+                    <i class="fas fa-user-check"></i> Assigner permission
                 </a>
             </div>
         </div>
     </div>
 
-    <!-- Colonne Droite - Contenu -->
     <div class="col-md-9">
+            <div class="settings-content" id="official-info" style="display: none;">
+                <form action="{{ route('admin.settings.update') }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="settings_section" value="official-info">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="fas fa-landmark me-2"></i> Informations officielles</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" for="ministry">Ministère</label>
+                                <input type="text" class="form-control" id="ministry" name="ministry" value="{{ old('ministry', $settings['official']['ministry']) }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="federation">Fédération</label>
+                                <input type="text" class="form-control" id="federation" name="federation" value="{{ old('federation', $settings['official']['federation']) }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="league">Ligue</label>
+                                <input type="text" class="form-control" id="league" name="league" value="{{ old('league', $settings['official']['league']) }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="motto">Devise du Taekwondo</label>
+                                <input type="text" class="form-control" id="motto" name="motto" value="{{ old('motto', $settings['official']['motto']) }}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white text-end">
+                        <button type="submit" class="btn text-white" style="background-color: var(--navbar-bg);">
+                            <i class="fas fa-save me-1"></i> Enregistrer
+                        </button>
+                    </div>
+                </div>
+                </form>
+            </div>
 
-        <!-- Liste Utilisateurs -->
+            <div class="settings-content" id="signature" style="display: none;">
+                <form action="{{ route('admin.settings.update') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="settings_section" value="signature">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="fas fa-signature me-2"></i> Signature électronique</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row align-items-center g-4">
+                            <div class="col-md-5 text-center">
+                                @if($settings['signature_path'])
+                                    <img src="{{ \App\Support\CardSettings::publicUrl($settings['signature_path']) }}" alt="Signature actuelle" class="img-fluid border rounded p-3 bg-white" style="max-height: 160px;">
+                                @else
+                                    <div class="border rounded bg-light py-5 text-muted">Aucune signature</div>
+                                @endif
+                            </div>
+                            <div class="col-md-7">
+                                <input type="hidden" id="signature_data" name="signature_data" value="">
+                                <div class="d-flex flex-wrap gap-2 mb-3">
+                                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#signatureModal">
+                                        <i class="fas fa-pen-nib me-1"></i> Signer
+                                    </button>
+                                    <label class="btn btn-outline-secondary mb-0" for="signature_file">
+                                        <i class="fas fa-upload me-1"></i> Uploader
+                                    </label>
+                                </div>
+                                <input type="file" class="form-control d-none" id="signature_file" name="signature" accept="image/jpeg,image/png,image/webp,image/jpg" data-preview="signaturePreview">
+                                <div class="form-text">L'upload retire automatiquement le fond clair de l'image.</div>
+                                <img id="signaturePreview" class="img-fluid border rounded p-2 bg-white mt-3 d-none" style="max-height: 150px;" alt="Prévisualisation signature">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white text-end">
+                        <button type="submit" class="btn text-white" style="background-color: var(--navbar-bg);">
+                            <i class="fas fa-save me-1"></i> Enregistrer
+                        </button>
+                    </div>
+                </div>
+                </form>
+            </div>
+
+            <div class="settings-content" id="card-models" style="display: none;">
+                <form action="{{ route('admin.settings.update') }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="settings_section" value="card-models">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="fas fa-id-card me-2"></i> Modèles de cartes</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            @foreach(['classic' => 'Classique', 'modern' => 'Moderne', 'minimal' => 'Minimal'] as $value => $label)
+                                <div class="col-md-4">
+                                    <label class="card-template-option w-100">
+                                        <input type="radio" name="default_template" value="{{ $value }}" class="d-none" {{ old('default_template', $settings['card']['default_template']) === $value ? 'checked' : '' }}>
+                                        <span class="template-preview template-{{ $value }}">
+                                            <span class="template-title">{{ $label }}</span>
+                                            <span class="template-line"></span>
+                                            <span class="template-chip"></span>
+                                        </span>
+                                    </label>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white text-end">
+                        <button type="submit" class="btn text-white" style="background-color: var(--navbar-bg);">
+                            <i class="fas fa-save me-1"></i> Enregistrer
+                        </button>
+                    </div>
+                </div>
+                </form>
+            </div>
+
+            <div class="settings-content" id="appearance" style="display: none;">
+                <form action="{{ route('admin.settings.update') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="settings_section" value="appearance">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="fas fa-palette me-2"></i> Apparence</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label" for="primary_color">Couleur principale</label>
+                                <input type="color" class="form-control form-control-color" id="primary_color" name="primary_color" value="{{ old('primary_color', $settings['card']['primary_color']) }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="secondary_color">Couleur secondaire</label>
+                                <input type="color" class="form-control form-control-color" id="secondary_color" name="secondary_color" value="{{ old('secondary_color', $settings['card']['secondary_color']) }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="background_color">Arrière-plan de la carte</label>
+                                <input type="color" class="form-control form-control-color" id="background_color" name="background_color" value="{{ old('background_color', $settings['card']['background_color']) }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="background_image">Image d'arrière-plan</label>
+                                <input type="file" class="form-control" id="background_image" name="background_image" accept="image/jpeg,image/png,image/webp,image/jpg" data-preview="backgroundPreview">
+                                @if($settings['card']['background_image_path'])
+                                    <img src="{{ \App\Support\CardSettings::publicUrl($settings['card']['background_image_path']) }}" class="img-fluid border rounded mt-3" style="max-height: 150px;" alt="Arrière-plan actuel">
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input" type="checkbox" value="1" id="remove_background_image" name="remove_background_image">
+                                        <label class="form-check-label text-danger fw-semibold" for="remove_background_image">
+                                            Retirer l'image d'arrière-plan
+                                        </label>
+                                    </div>
+                                @endif
+                                <img id="backgroundPreview" class="img-fluid border rounded mt-3 d-none" style="max-height: 150px;" alt="Prévisualisation arrière-plan">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="decorative_image">Image décorative</label>
+                                <input type="file" class="form-control" id="decorative_image" name="decorative_image" accept="image/jpeg,image/png,image/webp,image/jpg" data-preview="decorativePreview">
+                                @if($settings['card']['decorative_image_path'])
+                                    <img src="{{ \App\Support\CardSettings::publicUrl($settings['card']['decorative_image_path']) }}" class="img-fluid border rounded mt-3" style="max-height: 150px;" alt="Décoration actuelle">
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input" type="checkbox" value="1" id="remove_decorative_image" name="remove_decorative_image">
+                                        <label class="form-check-label text-danger fw-semibold" for="remove_decorative_image">
+                                            Retirer l'image décorative
+                                        </label>
+                                    </div>
+                                @endif
+                                <img id="decorativePreview" class="img-fluid border rounded mt-3 d-none" style="max-height: 150px;" alt="Prévisualisation décoration">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white text-end">
+                        <button type="submit" class="btn text-white" style="background-color: var(--navbar-bg);">
+                            <i class="fas fa-save me-1"></i> Enregistrer
+                        </button>
+                    </div>
+                </div>
+                </form>
+            </div>
+
         <div class="settings-content" id="users-list" style="display: none;">
-            <div class="card">
-                <div class="card-header settings-card-header d-flex align-items-center justify-content-between text-white">
-                    <h5 class="mb-0">
-                        <i class="fas fa-users"></i> Liste Utilisateurs
-                    </h5>
-                    @if(Auth::user()->isSuperAdmin() || Auth::user()->hasPermission('create_user'))
-                        <a href="#" class="btn btn-sm btn-sombre" id="btn-create-user" data-bs-toggle="modal" data-bs-target="#createUserModal">
-                            <i class="fas fa-plus"></i> Utilisateur
-                        </a>
-                    @endif
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white d-flex align-items-center justify-content-between">
+                    <h5 class="mb-0"><i class="fas fa-users me-2"></i> Utilisateurs</h5>
+                    <a href="{{ route('admin.users.index') }}" class="btn btn-sm btn-outline-secondary">Gérer</a>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nom</th>
+                                <th>Email</th>
+                                <th>Rôle</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($users ?? [] as $u)
                                 <tr>
-                                    <th>Nom</th>
-                                    <th>Email</th>
-                                    <th>Rôle</th>
-                                    <th>Statut</th>
-                                    <th class="text-center">Action</th>
+                                    <td>{{ $u->name }}</td>
+                                    <td>{{ $u->email }}</td>
+                                    <td>{{ $u->role }}</td>
+                                    <td>{{ $u->status }}</td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($users ?? [] as $u)
-                                    @php
-                                        $currentRole = \App\Shared\Enums\UserRole::tryFrom(Auth::user()->role);
-                                        $targetRole = \App\Shared\Enums\UserRole::tryFrom($u->role);
-                                        $canToggleAccount = (Auth::user()->isSuperAdmin() || Auth::user()->hasPermission('edit_user'))
-                                            && Auth::id() !== $u->id
-                                            && $targetRole
-                                            && !in_array($targetRole, [\App\Shared\Enums\UserRole::SUPERADMIN, \App\Shared\Enums\UserRole::ADMIN], true)
-                                            && ($currentRole === \App\Shared\Enums\UserRole::SUPERADMIN || ($currentRole && $currentRole->canManage($targetRole)));
-                                        $isAccountActive = (bool) $u->is_active && (string) $u->status === \App\Shared\Enums\UserStatus::ACTIVE->value;
-                                    @endphp
-                                    <tr>
-                                        <td>{{ $u->name }}</td>
-                                        <td>{{ $u->email }}</td>
-                                        <td>{{ $u->role }}</td>
-                                        <td>{{ $u->status }}</td>
-                                        <td class="text-center">
-                                            <div class="d-flex justify-content-center gap-2">
-                                                @if(Auth::user()->isSuperAdmin() || Auth::user()->hasPermission('edit_user'))
-                                                    <button type="button"
-                                                            class="btn btn-sm btn-outline-secondary btn-edit-user"
-                                                            title="Modifier"
-                                                            data-id="{{ $u->id }}"
-                                                            data-name="{{ $u->name }}"
-                                                            data-email="{{ $u->email }}"
-                                                            data-phone="{{ $u->phone }}"
-                                                            data-specialite="{{ $u->specialite }}"
-                                                            data-diplome="{{ $u->diplome }}"
-                                                            data-adresse="{{ $u->adresse }}"
-                                                            data-role="{{ $u->role }}"
-                                                            data-status="{{ $u->status }}"
-                                                            data-active="{{ $u->is_active ? '1' : '0' }}">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                @endif
-                                                @if($canToggleAccount)
-                                                    <form method="POST"
-                                                          action="{{ $isAccountActive ? route('admin.users.deactivate', $u) : route('admin.users.activate', $u) }}"
-                                                          class="d-inline toggle-user-form"
-                                                          data-message="{{ $isAccountActive ? 'Désactiver ce compte utilisateur ?' : 'Activer ce compte utilisateur ?' }}">
-                                                        @csrf
-                                                        @method('PATCH')
-                                                        <button type="submit"
-                                                                class="btn btn-sm {{ $isAccountActive ? 'btn-outline-warning' : 'btn-outline-success' }}"
-                                                                title="{{ $isAccountActive ? 'Désactiver' : 'Activer' }}">
-                                                            <i class="fas {{ $isAccountActive ? 'fa-user-slash' : 'fa-user-check' }}"></i>
-                                                        </button>
-                                                    </form>
-                                                @endif
-                                                @if(Auth::user()->isSuperAdmin() || Auth::user()->hasPermission('delete_user'))
-                                                    <form method="POST" action="{{ route('admin.users.destroy', $u) }}" class="d-inline delete-user-form">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <input type="hidden" name="back_to_settings" value="1">
-                                                        <button type="button" class="btn btn-sm btn-outline-danger btn-delete-user" data-user-name="{{ $u->name }}" title="Supprimer">
-                                                            <i class="fas fa-trash-alt"></i>
-                                                        </button>
-                                                    </form>
-                                                @endif
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                            @empty
+                                <tr><td colspan="4" class="text-center py-4 text-muted">Aucun utilisateur</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
-        <!-- Liste Permissions -->
         <div class="settings-content" id="permissions-list" style="display: none;">
-            <div class="card">
-                <div class="card-header settings-card-header d-flex align-items-center justify-content-between text-white">
-                    <h5 class="mb-0">
-                        <i class="fas fa-th-list"></i> Liste Permissions
-                    </h5>
-                    @if(Auth::user()->isSuperAdmin() || Auth::user()->hasPermission('create_permission') || Auth::user()->hasPermission('manage_permissions'))
-                        <a href="#" class="btn btn-sm btn-sombre" id="btn-create-permission" data-bs-toggle="modal" data-bs-target="#createPermissionModal">
-                            <i class="fas fa-plus"></i> Permission
-                        </a>
-                    @endif
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-key me-2"></i> Permissions</h5>
                 </div>
-                <div class="card-body">
-                    <div class="row g-2 align-items-end mb-3">
-                        <div class="col-md-8">
-                            <label for="permission_search" class="form-label">Recherche</label>
-                            <input type="text"
-                                   id="permission_search"
-                                   class="form-control"
-                                   value="{{ $permissionSearch ?? '' }}"
-                                   placeholder="Rechercher par nom, module ou identifiant"
-                                   autocomplete="off">
-                        </div>
-                        <div class="col-md-4">
-                            <button type="button" class="btn btn-outline-secondary" id="btn-clear-permission-search">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nom</th>
+                                <th>Module</th>
+                                <th>Identifiant</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($permissions ?? [] as $p)
                                 <tr>
-                                    <th>Nom</th>
-                                    <th>Module</th>
-                                    <th>Identifiant</th>
-                                    <th>Action</th>
+                                    <td>{{ $p->name }}</td>
+                                    <td>{{ $p->module }}</td>
+                                    <td><code>{{ $p->slug }}</code></td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($permissions ?? [] as $p)
-                                    <tr class="permission-row" data-search="{{ strtolower($p->name . ' ' . $p->module . ' ' . $p->slug) }}">
-                                        <td>{{ $p->name }}</td>
-                                        <td>{{ $p->module }}</td>
-                                        <td>{{ $p->slug }}</td>
-                                        <td>
-                                            <div class="d-flex justify-content-center gap-2">
-                                                @if(Auth::user()->isSuperAdmin() || Auth::user()->hasPermission('manage_permissions'))
-                                                    <button type="button"
-                                                            class="btn btn-sm btn-outline-secondary btn-edit-permission"
-                                                            title="Modifier"
-                                                            data-id="{{ $p->id }}"
-                                                            data-name="{{ $p->name }}"
-                                                            data-module="{{ $p->module }}"
-                                                            data-slug="{{ $p->slug }}">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                @endif
-                                                @if(Auth::user()->isSuperAdmin() || Auth::user()->hasPermission('delete_permission') || Auth::user()->hasPermission('manage_permissions'))
-                                                    <form method="POST" action="{{ route('admin.permissions.destroy', $p) }}" class="d-inline delete-permission-form">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="button" class="btn btn-sm btn-outline-danger btn-delete-permission" data-permission-name="{{ $p->name }}" title="Supprimer">
-                                                            <i class="fas fa-trash-alt"></i>
-                                                        </button>
-                                                    </form>
-                                                @endif
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="4" class="text-center py-4 text-muted">Aucune permission trouvée</td>
-                                    </tr>
-                                @endforelse
-                                <tr id="permissions-empty-search" class="d-none">
-                                    <td colspan="4" class="text-center py-4 text-muted">Aucune permission ne correspond à la recherche</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                            @empty
+                                <tr><td colspan="3" class="text-center py-4 text-muted">Aucune permission</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
-        <!-- Assigner Permissions -->
         <div class="settings-content" id="permissions-assign" style="display: none;">
-            <div class="card">
-                <div class="card-header settings-card-header text-white">
-                    <h5 class="mb-0">
-                        <i class="fas fa-user-check"></i> + Assigner Permissions à un Utilisateur
-                    </h5>
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-user-check me-2"></i> Assigner permission</h5>
                 </div>
                 <div class="card-body">
-                    <form id="assignPermissionsForm" action="{{ route('admin.permissions.assign') }}" method="POST">
+                    <form action="{{ route('admin.permissions.assign') }}" method="POST">
                         @csrf
-                        <div class="mb-4">
-                            <label for="user_select" class="form-label">Sélectionner un Utilisateur</label>
-                            @php $currentUser = Auth::user(); @endphp
-                            <select class="form-select @error('user_id') is-invalid @enderror" id="user_select" name="user_id" required>
+                        <div class="mb-3">
+                            <label for="user_select" class="form-label">Utilisateur</label>
+                            <select class="form-select" id="user_select" name="user_id" required>
                                 <option value="">-- Choisir un utilisateur --</option>
                                 @foreach($users ?? [] as $user)
-                                    @if(!$currentUser->isSuperAdmin() && $user->isSuperAdmin())
-                                        @continue
-                                    @endif
-                                    <option value="{{ $user->id }}"
-                                            data-superadmin="{{ $user->isSuperAdmin() ? '1' : '0' }}"
-                                            data-permissions="{{ $user->permissions->pluck('id')->join(',') }}">
+                                    <option value="{{ $user->id }}" data-permissions="{{ $user->permissions->pluck('id')->join(',') }}">
                                         {{ $user->name }} ({{ $user->email }})
                                     </option>
                                 @endforeach
                             </select>
                         </div>
 
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div>
-                                <button type="button" class="btn btn-sm btn-outline-primary" id="btn_select_all">
-                                    <i class="fas fa-check-square"></i> Tout sélectionner
-                                </button>
-                                <button type="button" class="btn btn-sm btn-outline-secondary" id="btn_deselect_all">
-                                    <i class="fas fa-square"></i> Tout désélectionner
-                                </button>
-                            </div>
-                            <div class="text-muted small">Sélectionnez ou désélectionnez toutes les permissions visibles.</div>
-                        </div>
-
-                        <!-- Tableau des Permissions par Module -->
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Module</th>
-                                        <th colspan="4" class="text-center">Permissions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse($permissionsByModule ?? [] as $module => $modulePermissions)
-                                        <tr>
-                                            <td colspan="5" class="table-active fw-bold 1875rem">
-                                                <i class="fas fa-folder"></i> {{ $module }}
-                                            </td>
-                                        </tr>
+                        <div class="row">
+                            @forelse($permissionsByModule ?? [] as $module => $modulePermissions)
+                                <div class="col-md-6 mb-3">
+                                    <div class="border rounded p-3 h-100">
+                                        <div class="fw-bold mb-2">{{ $module }}</div>
                                         @foreach($modulePermissions as $permission)
-                                            <tr>
-                                                <td style="padding-left: 40px;">{{ $permission->name }}</td>
-                                                <td class="text-center">
-                                                    <div class="form-check">
-                                                        <input 
-                                                            type="checkbox" 
-                                                            class="form-check-input permission-checkbox" 
-                                                            id="perm_{{ $permission->id }}"
-                                                            name="permissions[]"
-                                                            value="{{ $permission->id }}"
-                                                            data-permission="{{ $permission->slug }}"
-                                                        >
-                                                    </div>
-                                                </td>
-                                            </tr>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input permission-checkbox" id="perm_{{ $permission->id }}" name="permissions[]" value="{{ $permission->id }}">
+                                                <label class="form-check-label" for="perm_{{ $permission->id }}">{{ $permission->name }}</label>
+                                            </div>
                                         @endforeach
-                                    @empty
-                                        <tr>
-                                            <td colspan="5" class="text-center text-muted py-4">
-                                                Aucune permission disponible
-                                            </td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div class="mt-4">
-                            <button type="button" class="btn btn-secondary" id="btn_cancel">
-                                <i class="fas fa-times"></i> Annuler
-                            </button>
-                            <button type="submit" class="btn btn-primary" id="btn_save_permissions">
-                                <i class="fas fa-save"></i> Sauvegarder Permissions
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- Salles -->
-        <div class="settings-content" id="salles-list" style="display: none;">
-            <div class="card mb-4">
-                <div class="card-header settings-card-header text-white">
-                    <h5 class="mb-0">
-                        <i class="fas fa-door-open"></i> Salles
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <form action="{{ route('admin.settings.salles.store') }}" method="POST" class="row g-3 align-items-end mb-4">
-                        @csrf
-                        <div class="col-md-4">
-                            <label for="salle_nom" class="form-label">Nom de la salle</label>
-                            <input type="text" name="nom" id="salle_nom" class="form-control @error('nom') is-invalid @enderror" value="{{ old('nom') }}" required placeholder="ex: Salle A1">
-                            @error('nom')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        </div>
-                        <div class="col-md-2">
-                            <label for="salle_capacite" class="form-label">Capacité</label>
-                            <input type="number" min="0" name="capacite" id="salle_capacite" class="form-control @error('capacite') is-invalid @enderror" value="{{ old('capacite') }}">
-                            @error('capacite')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        </div>
-                        <div class="col-md-4">
-                            <label for="salle_description" class="form-label">Description</label>
-                            <input type="text" name="description" id="salle_description" class="form-control" value="{{ old('description') }}" placeholder="Bâtiment, étage, équipement...">
-                        </div>
-                        <div class="col-md-2">
-                            <input type="hidden" name="is_active" value="0">
-                            <div class="form-check form-switch d-block mb-2">
-                                <input class="form-check-input" type="checkbox" id="salle_is_active" name="is_active" value="1" checked>
-                                <label class="form-check-label" for="salle_is_active">Active</label>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100">
-                                <i class="fas fa-plus"></i> Ajouter
-                            </button>
-                        </div>
-                    </form>
-
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Nom</th>
-                                    <th>Capacité</th>
-                                    <th>Description</th>
-                                    <th>Statut</th>
-                                    <th class="text-center">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($salles ?? [] as $salle)
-                                    <tr>
-                                        <td class="fw-bold">{{ $salle->nom }}</td>
-                                        <td>{{ $salle->capacite ? $salle->capacite . ' places' : '-' }}</td>
-                                        <td>{{ $salle->description ?: '-' }}</td>
-                                        <td>
-                                            @if($salle->is_active)
-                                                <span class="badge bg-success">Active</span>
-                                            @else
-                                                <span class="badge bg-secondary">Inactive</span>
-                                            @endif
-                                        </td>
-                                        <td class="text-center">
-                                            <div class="d-flex justify-content-center gap-2">
-                                                <button type="button"
-                                                        class="btn btn-sm btn-outline-secondary"
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#editSalleModal{{ $salle->id }}"
-                                                        title="Modifier">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                                <form method="POST" action="{{ route('admin.settings.salles.destroy', $salle) }}" class="d-inline delete-salle-form">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="button" class="btn btn-sm btn-outline-danger btn-delete-salle" data-salle-name="{{ $salle->nom }}" title="Supprimer">
-                                                        <i class="fas fa-trash-alt"></i>
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                    <div class="modal fade" id="editSalleModal{{ $salle->id }}" tabindex="-1" aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-centered">
-                                            <div class="modal-content">
-                                                <div class="modal-header bg-dark text-white">
-                                                    <h5 class="modal-title"><i class="fas fa-edit"></i> Modifier la salle</h5>
-                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
-                                                </div>
-                                                <form action="{{ route('admin.settings.salles.update', $salle) }}" method="POST">
-                                                    @csrf
-                                                    @method('PUT')
-                                                    <div class="modal-body">
-                                                        <div class="mb-3">
-                                                            <label class="form-label">Nom de la salle</label>
-                                                            <input type="text" name="nom" class="form-control" value="{{ old('nom', $salle->nom) }}" required>
-                                                        </div>
-                                                        <div class="mb-3">
-                                                            <label class="form-label">Capacité</label>
-                                                            <input type="number" min="0" name="capacite" class="form-control" value="{{ old('capacite', $salle->capacite) }}">
-                                                        </div>
-                                                        <div class="mb-3">
-                                                            <label class="form-label">Description</label>
-                                                            <textarea name="description" class="form-control" rows="3">{{ old('description', $salle->description) }}</textarea>
-                                                        </div>
-                                                        <input type="hidden" name="is_active" value="0">
-                                                        <div class="form-check form-switch">
-                                                            <input class="form-check-input" type="checkbox" name="is_active" id="salle_active_{{ $salle->id }}" value="1" {{ $salle->is_active ? 'checked' : '' }}>
-                                                            <label class="form-check-label" for="salle_active_{{ $salle->id }}">Salle active</label>
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                                                        <button type="submit" class="btn btn-primary">Enregistrer</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
                                     </div>
-                                @empty
-                                    <tr>
-                                        <td colspan="5" class="text-center py-4 text-muted">Aucune salle enregistrée</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+                                </div>
+                            @empty
+                                <div class="col-12 text-center py-4 text-muted">Aucune permission disponible</div>
+                            @endforelse
+                        </div>
 
-        <!-- Changer mot de passe -->
-        <div class="settings-content" id="change-password" style="display: none;">
-            <div class="card">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">
-                        <i class="fas fa-key"></i> + Changer mot de passe
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <form action="{{ route('password.update') }}" method="POST">
-                        @csrf
-                        <div class="mb-3">
-                            <label for="current_password" class="form-label">Mot de passe actuel</label>
-                            <input type="password" name="current_password" id="current_password" class="form-control" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="new_password" class="form-label">Nouveau mot de passe</label>
-                            <input type="password" name="new_password" id="new_password" class="form-control" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="new_password_confirmation" class="form-label">Confirmer le nouveau mot de passe</label>
-                            <input type="password" name="new_password_confirmation" id="new_password_confirmation" class="form-control" required>
-                        </div>
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">Enregistrer</button>
-                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i> Sauvegarder
+                        </button>
                     </form>
                 </div>
             </div>
         </div>
+    </div>
+</div>
 
+<div class="modal fade" id="signatureModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-signature me-2"></i> Signature électronique</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                <div class="signature-pad-wrap">
+                    <canvas id="signaturePad" width="720" height="260"></canvas>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary" id="clearSignaturePad">Effacer</button>
+                <button type="button" class="btn text-white" id="useSignaturePad" style="background-color: var(--navbar-bg);">
+                    Utiliser cette signature
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
 <style>
-    .settings-menu-item {
-        border-left: 3px solid transparent;
-        transition: all 0.3s;
+    .settings-nav .list-group-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
 
-    .bg-dark-clair {
-        background-color: #2b3038 !important;
+    .settings-nav .active {
+        background-color: var(--navbar-bg);
+        border-color: var(--navbar-bg);
+        color: #fff;
     }
 
-    .table.table-hover {
-        border: 1px solid rgba(64, 96, 160, 0.35);
-        border-radius: 12px;
+    .card-template-option {
+        cursor: pointer;
+    }
+
+    .template-preview {
+        min-height: 150px;
+        border: 2px solid #d8dee9;
+        border-radius: 8px;
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background: #f8fafc;
+    }
+
+    .card-template-option input:checked + .template-preview {
+        border-color: var(--navbar-bg);
+        box-shadow: 0 0 0 3px rgba(21, 38, 69, 0.12);
+    }
+
+    .template-modern {
+        background: linear-gradient(135deg, #ffffff 0%, #e7f5ef 100%);
+    }
+
+    .template-minimal {
+        background: #ffffff;
+    }
+
+    .template-title {
+        font-weight: 700;
+    }
+
+    .template-line {
+        height: 8px;
+        width: 70%;
+        background: #0f5132;
+        border-radius: 4px;
+    }
+
+    .template-chip {
+        width: 44px;
+        height: 44px;
+        border-radius: 8px;
+        background: #d4af37;
+    }
+
+    .signature-pad-wrap {
+        width: 100%;
+        background: #fff;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
         overflow: hidden;
     }
 
-    .table.table-hover thead th {
-        background-color: transparent;
-        color: var(--body-text);
-        border-bottom: 1px solid rgba(64, 96, 160, 0.18);
-        padding: 14px 16px;
-        font-weight: 700;
-        letter-spacing: 0.02em;
-    }
-
-    .table.table-hover tbody tr {
-        border-bottom: 1px solid rgba(64, 96, 160, 0.12);
-        background-color: var(--card-bg);
-    }
-
-    .table.table-hover tbody tr:hover {
-        background-color: rgba(64, 96, 160, 0.08);
-    }
-
-    .table.table-hover tbody td {
-        border: none;
-        padding: 14px 16px;
-        vertical-align: middle;
-    }
-
-    .table.table-hover .table-active {
-        background-color: #4060a0;
-        color: #ffffff;
-        border-bottom: 1px solid rgba(64, 96, 160, 0.35);
-    }
-
-    /* Use navbar/sidebar theme colors for module headers in "Assigner Permissions" */
-    #permissions-assign .table-active {
-        background-color: var(--navbar-bg) !important;
-        color: var(--navbar-text) !important;
-        border-bottom: 1px solid rgba(255,255,255,0.08) !important;
-    }
-
-    /* Ensure dark mode uses same variables (var values adjust in dark-mode) */
-    html.dark-mode #permissions-assign .table-active {
-        background-color: var(--navbar-bg) !important;
-        color: var(--navbar-text) !important;
-        border-bottom: 1px solid rgba(255,255,255,0.06) !important;
-    }
-
-    .form-check {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 42px;
-        margin-bottom: 0;
-    }
-
-    .form-check-input.permission-checkbox {
-        width: 20px;
-        height: 20px;
-        accent-color: var(--primary-color);
-        cursor: pointer;
-        box-shadow: inset 0 0 0 1px rgba(64, 96, 160, 0.3);
-    }
-
-    .form-check-input.permission-checkbox:focus {
-        box-shadow: 0 0 0 0.2rem rgba(64, 96, 160, 0.25);
-    }
-
-    .settings-menu-item:hover {
-        background-color: #f8f9fa;
-        border-left-color: var(--primary-color, #667eea);
-    }
-
-    .settings-menu-item.active {
-        background-color: rgba(64, 96, 160, 0.12);
-        border-left-color: var(--primary-color, #667eea);
-        color: var(--primary-color, #667eea);
-    }
-
-    .settings-sidebar-header,
-    .settings-card-header {
-        background-color: var(--navbar-bg);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-    }
-
-    .settings-card-header h5 {
-        color: #ffffff;
-    }
-
-    .btn-sombre {
-        background-color: var(--navbar-bg);
-        color: #ffffff;
-        border-color: var(--navbar-bg);
-    }
-
-    .btn-sombre:hover,
-    .btn-sombre:focus {
-        background-color: rgba(21, 38, 69, 0.92);
-        border-color: rgba(21, 38, 69, 0.92);
-        color: #ffffff;
-    }
-
-    html.dark-mode .settings-menu-item:hover,
-    html.dark-mode .settings-menu-item.active {
-        background-color: #333;
+    #signaturePad {
+        width: 100%;
+        height: 180px;
+        display: block;
+        touch-action: none;
+        cursor: crosshair;
     }
 </style>
-
 @endsection
 
 @section('js')
-<!-- SweetAlert2 -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-<!-- Modals -->
-<div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-dark text-white">
-                <h5 class="modal-title" id="createUserModalLabel"><i class="fas fa-user-plus"></i> Nouvel utilisateur</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
-            </div>
-            <form id="settingsUserForm" action="{{ route('admin.users.store') }}" method="POST">
-                @csrf
-                <input type="hidden" name="_method" id="settings_user_method" value="POST">
-                <input type="hidden" name="user_id" id="settings_user_id">
-                <input type="hidden" name="back_to_settings" value="1">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="new_user_name" class="form-label">Prénom & Nom</label>
-                        <input type="text" name="name" id="new_user_name" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="new_user_email" class="form-label">Email</label>
-                        <input type="email" name="email" id="new_user_email" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="new_user_phone" class="form-label">Téléphone</label>
-                        <input type="text" name="phone" id="new_user_phone" class="form-control">
-                    </div>
-                    <div id="settings_formateur_fields" class="border rounded p-3 mb-3 d-none">
-                        <h6 class="mb-3">Informations formateur</h6>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label for="new_user_specialite" class="form-label">Spécialité</label>
-                                <input type="text" name="specialite" id="new_user_specialite" class="form-control">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="new_user_diplome" class="form-label">Diplôme</label>
-                                <select name="diplome" id="new_user_diplome" class="form-select">
-                                    <option value="">-- Sélectionner --</option>
-                                    @foreach(['DUT', 'BTS', 'LICENCE', 'MASTER', 'DEA', 'DOCTORAT', 'AUTRE'] as $diplome)
-                                        <option value="{{ $diplome }}">{{ $diplome }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="new_user_adresse" class="form-label">Adresse</label>
-                                <input type="text" name="adresse" id="new_user_adresse" class="form-control">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="new_user_password" class="form-label" id="settings_user_password_label">Mot de passe</label>
-                        <div class="input-group">
-                            <input type="password" name="password" id="new_user_password" class="form-control" required>
-                            <button class="btn btn-outline-secondary settings-password-toggle" type="button" data-target="new_user_password" aria-label="Afficher le mot de passe">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                        <small class="text-muted d-none" id="settings_user_password_help">Laissez vide pour conserver le mot de passe actuel.</small>
-                    </div>
-                    <div class="mb-3">
-                        <label for="new_user_password_confirmation" class="form-label" id="settings_user_password_confirmation_label">Confirmer le mot de passe</label>
-                        <div class="input-group">
-                            <input type="password" name="password_confirmation" id="new_user_password_confirmation" class="form-control" required>
-                            <button class="btn btn-outline-secondary settings-password-toggle" type="button" data-target="new_user_password_confirmation" aria-label="Afficher la confirmation du mot de passe">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label for="new_user_role" class="form-label">Rôle</label>
-                            <select name="role" id="new_user_role" class="form-select" required>
-                                @foreach($roles ?? [] as $roleValue => $roleLabel)
-                                    @if(Auth::user()->isSuperAdmin() || $roleValue !== 'superadmin')
-                                        <option value="{{ $roleValue }}">{{ $roleLabel }}</option>
-                                    @endif
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="new_user_status" class="form-label">Statut</label>
-                            <select name="status" id="new_user_status" class="form-select" required>
-                                @foreach($statuses ?? [] as $statusValue => $statusLabel)
-                                    <option value="{{ $statusValue }}">{{ $statusLabel }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-check form-switch mt-3">
-                        <input class="form-check-input" type="checkbox" id="new_user_active" name="is_active" value="1" checked>
-                        <label class="form-check-label" for="new_user_active">Activer l'utilisateur</label>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-primary" id="settings_user_submit">Créer</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="createPermissionModal" tabindex="-1" aria-labelledby="createPermissionModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-dark text-white">
-                <h5 class="modal-title" id="createPermissionModalLabel"><i class="fas fa-key"></i> Nouvelle permission</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
-            </div>
-            <form id="permissionForm" action="{{ route('admin.permissions.store') }}" method="POST">
-                @csrf
-                <input type="hidden" name="_method" id="permission_method" value="PUT" disabled>
-                <input type="hidden" name="permission_form_mode" id="permission_form_mode" value="create">
-                <input type="hidden" name="permission_id" id="permission_id">
-                <div class="modal-body">
-                    @if($errors->any() && old('permission_form_mode'))
-                        <div class="alert alert-danger">
-                            <ul class="mb-0">
-                                @foreach($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
-                    <div class="mb-3">
-                        <label for="permission_name" class="form-label">Nom</label>
-                        <input type="text" name="name" id="permission_name" class="form-control" value="{{ old('permission_form_mode') ? old('name') : '' }}" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="permission_module" class="form-label">Module</label>
-                        <input type="text" name="module" id="permission_module" class="form-control" value="{{ old('permission_form_mode') ? old('module') : '' }}" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="permission_slug" class="form-label">Identifiant interne</label>
-                        <input type="text"
-                               name="slug"
-                               id="permission_slug"
-                               class="form-control bg-light"
-                               value="{{ old('permission_form_mode') ? old('slug') : '' }}"
-                               placeholder="ex: view_users"
-                               readonly>
-                        <small class="text-muted">Généré automatiquement à partir du nom.</small>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-primary" id="permission_submit">Créer</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
 <script>
-    document.querySelectorAll('.settings-menu-item').forEach(item => {
-        item.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            // Retirer active de tous les items
-            document.querySelectorAll('.settings-menu-item').forEach(i => i.classList.remove('active'));
-            this.classList.add('active');
-            
-            // Masquer tous les contenus
-            document.querySelectorAll('.settings-content').forEach(content => {
-                content.style.display = 'none';
-            });
-            
-            // Afficher le contenu sélectionné
-            const target = this.getAttribute('data-target');
-            document.getElementById(target).style.display = 'block';
-            if (target) {
-                const url = new URL(window.location);
-                url.searchParams.set('tab', target);
-                history.replaceState(null, '', url);
-            }
+document.addEventListener('DOMContentLoaded', function () {
+    const activeTab = @json($activeTab);
+    const menuItems = document.querySelectorAll('.settings-menu-item');
+    const contents = document.querySelectorAll('.settings-content');
+
+    function showTab(target) {
+        contents.forEach(content => content.style.display = content.id === target ? 'block' : 'none');
+        menuItems.forEach(item => item.classList.toggle('active', item.dataset.target === target));
+    }
+
+    menuItems.forEach(item => {
+        item.addEventListener('click', function (event) {
+            event.preventDefault();
+            showTab(this.dataset.target);
         });
     });
 
-    // Activer un onglet via query param `tab`
-    document.addEventListener('DOMContentLoaded', function() {
-        const params = new URLSearchParams(window.location.search);
-        const tab = params.get('tab') || 'users-list';
-        const el = document.querySelector(`.settings-menu-item[data-target="${tab}"]`);
-        if (el) {
-            el.click();
-        } else {
-            const fallback = document.querySelector('.settings-menu-item[data-target="users-list"]');
-            if (fallback) fallback.click();
-        }
+    showTab(activeTab);
 
-        if (typeof updatePermissionCheckboxes === 'function') {
-            updatePermissionCheckboxes();
-        }
+    setupSignatureTools();
 
-        @if(session('success'))
-            Swal.fire({
-                icon: 'success',
-                title: 'Succès',
-                text: @json(session('success')),
-                confirmButtonText: 'OK',
-                customClass: {
-                    confirmButton: 'btn btn-primary'
-                },
-                buttonsStyling: false
-            });
-        @endif
+    document.querySelectorAll('input[type="file"][data-preview]').forEach(input => {
+        input.addEventListener('change', function () {
+            if (this.id === 'signature_file') {
+                processSignatureUpload(this);
+                return;
+            }
 
-        @if(session('warning'))
-            Swal.fire({
-                icon: 'warning',
-                title: 'Attention',
-                text: @json(session('warning')),
-                confirmButtonText: 'OK',
-                customClass: {
-                    confirmButton: 'btn btn-primary'
-                },
-                buttonsStyling: false
-            });
-        @endif
+            const preview = document.getElementById(this.dataset.preview);
+            if (!preview || !this.files || !this.files[0]) return;
+
+            const reader = new FileReader();
+            reader.onload = event => {
+                preview.src = event.target.result;
+                preview.classList.remove('d-none');
+            };
+            reader.readAsDataURL(this.files[0]);
+        });
     });
 
     const userSelect = document.getElementById('user_select');
-    const selectAllButton = document.getElementById('btn_select_all');
-    const deselectAllButton = document.getElementById('btn_deselect_all');
-    const permissionCheckboxes = () => Array.from(document.querySelectorAll('.permission-checkbox'));
-
-    const updatePermissionCheckboxes = () => {
-        if (!userSelect) {
-            return;
-        }
-
-        const selectedOption = userSelect.selectedOptions.length > 0 ? userSelect.selectedOptions[0] : null;
-        const isSuperAdminUser = selectedOption && selectedOption.dataset.superadmin === '1';
-        const assignedPermissions = selectedOption && selectedOption.dataset.permissions
-            ? selectedOption.dataset.permissions.split(',').filter(Boolean).map(id => Number(id))
-            : [];
-
-        permissionCheckboxes().forEach(cb => {
-            if (isSuperAdminUser) {
-                cb.checked = true;
-                cb.disabled = true;
-            } else {
-                cb.checked = assignedPermissions.includes(Number(cb.value));
-                cb.disabled = false;
-            }
-        });
-    };
-
-    const setAllPermissions = (checked) => {
-        permissionCheckboxes().forEach(cb => {
-            if (!cb.disabled) {
-                cb.checked = checked;
-            }
-        });
-    };
-
     if (userSelect) {
-        userSelect.addEventListener('change', updatePermissionCheckboxes);
-    }
-
-    if (selectAllButton) {
-        selectAllButton.addEventListener('click', function() {
-            setAllPermissions(true);
-        });
-    }
-
-    if (deselectAllButton) {
-        deselectAllButton.addEventListener('click', function() {
-            setAllPermissions(false);
-        });
-    }
-
-    function confirmDeletion(button, title, text) {
-        Swal.fire({
-            title: title,
-            text: text,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Oui, supprimer',
-            cancelButtonText: 'Annuler',
-            customClass: {
-                confirmButton: 'btn btn-danger me-2',
-                cancelButton: 'btn btn-secondary'
-            },
-            buttonsStyling: false
-        }).then(result => {
-            if (result.isConfirmed) {
-                button.closest('form')?.submit();
-            }
-        });
-    }
-
-    document.querySelectorAll('.btn-delete-user').forEach(button => {
-        button.addEventListener('click', function() {
-            confirmDeletion(this, 'Supprimer l\'utilisateur', `Voulez-vous vraiment supprimer ${this.dataset.userName} ?`);
-        });
-    });
-
-    document.querySelectorAll('.toggle-user-form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            Swal.fire({
-                title: 'Confirmation',
-                text: this.dataset.message || 'Confirmer cette action ?',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Oui',
-                cancelButtonText: 'Annuler',
-                customClass: {
-                    confirmButton: 'btn btn-primary me-2',
-                    cancelButton: 'btn btn-secondary'
-                },
-                buttonsStyling: false
-            }).then(result => {
-                if (result.isConfirmed) {
-                    this.submit();
-                }
+        userSelect.addEventListener('change', function () {
+            const selected = (this.options[this.selectedIndex]?.dataset.permissions || '').split(',').filter(Boolean);
+            document.querySelectorAll('.permission-checkbox').forEach(checkbox => {
+                checkbox.checked = selected.includes(checkbox.value);
             });
         });
-    });
-
-    const settingsUserModalElement = document.getElementById('createUserModal');
-    const settingsUserModal = settingsUserModalElement ? new bootstrap.Modal(settingsUserModalElement) : null;
-    const settingsUserForm = document.getElementById('settingsUserForm');
-    const settingsUserTitle = document.getElementById('createUserModalLabel');
-    const settingsUserSubmit = document.getElementById('settings_user_submit');
-    const settingsUserMethod = document.getElementById('settings_user_method');
-    const settingsUserId = document.getElementById('settings_user_id');
-    const settingsPassword = document.getElementById('new_user_password');
-    const settingsPasswordConfirmation = document.getElementById('new_user_password_confirmation');
-    const settingsPasswordLabel = document.getElementById('settings_user_password_label');
-    const settingsPasswordConfirmationLabel = document.getElementById('settings_user_password_confirmation_label');
-    const settingsPasswordHelp = document.getElementById('settings_user_password_help');
-    const settingsUserRole = document.getElementById('new_user_role');
-    const settingsFormateurFields = document.getElementById('settings_formateur_fields');
-    const settingsFormateurInputs = [
-        document.getElementById('new_user_specialite'),
-        document.getElementById('new_user_diplome'),
-        document.getElementById('new_user_adresse')
-    ].filter(Boolean);
-    const roleFormateurValue = "{{ \App\Shared\Enums\UserRole::FORMATEUR->value }}";
-    const settingsUserStoreUrl = "{{ route('admin.users.store') }}";
-    const settingsUserUpdateBase = "{{ url('admin/users') }}";
-
-    document.querySelectorAll('.settings-password-toggle').forEach(button => {
-        button.addEventListener('click', function() {
-            const input = document.getElementById(this.dataset.target);
-            const icon = this.querySelector('i');
-            const shouldShow = input.type === 'password';
-
-            input.type = shouldShow ? 'text' : 'password';
-            icon.classList.toggle('fa-eye', !shouldShow);
-            icon.classList.toggle('fa-eye-slash', shouldShow);
-            this.setAttribute('aria-label', shouldShow ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
-        });
-    });
-
-    function toggleSettingsFormateurFields() {
-        const isFormateur = settingsUserRole?.value === roleFormateurValue;
-        settingsFormateurFields?.classList.toggle('d-none', !isFormateur);
-        settingsFormateurInputs.forEach(input => input.required = isFormateur);
     }
 
-    function prepareCreateUserModal() {
-        if (!settingsUserForm) {
+    function setupSignatureTools() {
+        const canvas = document.getElementById('signaturePad');
+        const clearButton = document.getElementById('clearSignaturePad');
+        const useButton = document.getElementById('useSignaturePad');
+        const signatureData = document.getElementById('signature_data');
+        const signatureInput = document.getElementById('signature_file');
+        const signaturePreview = document.getElementById('signaturePreview');
+
+        if (!canvas || !clearButton || !useButton || !signatureData || !signaturePreview) {
             return;
         }
 
-        settingsUserForm.reset();
-        settingsUserForm.action = settingsUserStoreUrl;
-        settingsUserMethod.value = 'POST';
-        settingsUserId.value = '';
-        settingsUserTitle.innerHTML = '<i class="fas fa-user-plus"></i> Nouvel utilisateur';
-        settingsUserSubmit.textContent = 'Créer';
-        settingsPassword.required = true;
-        settingsPasswordConfirmation.required = true;
-        settingsPasswordLabel.textContent = 'Mot de passe';
-        settingsPasswordConfirmationLabel.textContent = 'Confirmer le mot de passe';
-        settingsPasswordHelp.classList.add('d-none');
-        document.getElementById('new_user_active').checked = true;
-        toggleSettingsFormateurFields();
-    }
+        const context = canvas.getContext('2d');
+        let isDrawing = false;
+        let hasDrawing = false;
 
-    document.getElementById('btn-create-user')?.addEventListener('click', prepareCreateUserModal);
-    settingsUserRole?.addEventListener('change', toggleSettingsFormateurFields);
+        const clearCanvas = function () {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.lineWidth = 4;
+            context.lineCap = 'round';
+            context.lineJoin = 'round';
+            context.strokeStyle = '#111827';
+            hasDrawing = false;
+        };
 
-    document.querySelectorAll('.btn-edit-user').forEach(button => {
-        button.addEventListener('click', function() {
-            if (!settingsUserForm || !settingsUserModal) {
-                return;
+        const position = function (event) {
+            const rect = canvas.getBoundingClientRect();
+            const point = event.touches ? event.touches[0] : event;
+
+            return {
+                x: (point.clientX - rect.left) * (canvas.width / rect.width),
+                y: (point.clientY - rect.top) * (canvas.height / rect.height)
+            };
+        };
+
+        const startDrawing = function (event) {
+            event.preventDefault();
+            isDrawing = true;
+            hasDrawing = true;
+            const point = position(event);
+            context.beginPath();
+            context.moveTo(point.x, point.y);
+        };
+
+        const draw = function (event) {
+            if (!isDrawing) return;
+            event.preventDefault();
+            const point = position(event);
+            context.lineTo(point.x, point.y);
+            context.stroke();
+        };
+
+        const stopDrawing = function () {
+            isDrawing = false;
+        };
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        window.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('touchstart', startDrawing, { passive: false });
+        canvas.addEventListener('touchmove', draw, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing);
+        clearButton.addEventListener('click', clearCanvas);
+
+        useButton.addEventListener('click', function () {
+            if (!hasDrawing) return;
+
+            signatureData.value = canvas.toDataURL('image/png');
+            if (signatureInput) {
+                signatureInput.value = '';
             }
+            signaturePreview.src = signatureData.value;
+            signaturePreview.classList.remove('d-none');
 
-            settingsUserForm.reset();
-            settingsUserForm.action = `${settingsUserUpdateBase}/${this.dataset.id}`;
-            settingsUserMethod.value = 'PUT';
-            settingsUserId.value = this.dataset.id || '';
-            settingsUserTitle.innerHTML = '<i class="fas fa-user-edit"></i> Modifier l\'utilisateur';
-            settingsUserSubmit.textContent = 'Enregistrer';
-
-            document.getElementById('new_user_name').value = this.dataset.name || '';
-            document.getElementById('new_user_email').value = this.dataset.email || '';
-            document.getElementById('new_user_phone').value = this.dataset.phone || '';
-            document.getElementById('new_user_role').value = this.dataset.role || '';
-            document.getElementById('new_user_specialite').value = this.dataset.specialite || '';
-            document.getElementById('new_user_diplome').value = this.dataset.diplome || '';
-            document.getElementById('new_user_adresse').value = this.dataset.adresse || '';
-            document.getElementById('new_user_status').value = this.dataset.status || 'active';
-            document.getElementById('new_user_active').checked = this.dataset.active === '1';
-
-            settingsPassword.required = false;
-            settingsPasswordConfirmation.required = false;
-            settingsPasswordLabel.textContent = 'Mot de passe (optionnel)';
-            settingsPasswordConfirmationLabel.textContent = 'Confirmer le mot de passe';
-            settingsPasswordHelp.classList.remove('d-none');
-            toggleSettingsFormateurFields();
-
-            settingsUserModal.show();
-        });
-    });
-
-    document.querySelectorAll('.btn-delete-permission').forEach(button => {
-        button.addEventListener('click', function() {
-            confirmDeletion(this, 'Supprimer la permission', `Voulez-vous vraiment supprimer ${this.dataset.permissionName} ?`);
-        });
-    });
-
-    document.querySelectorAll('.btn-delete-salle').forEach(button => {
-        button.addEventListener('click', function() {
-            confirmDeletion(this, 'Supprimer la salle', `Voulez-vous vraiment supprimer ${this.dataset.salleName} ?`);
-        });
-    });
-
-    const permissionModalElement = document.getElementById('createPermissionModal');
-    const permissionModal = permissionModalElement ? new bootstrap.Modal(permissionModalElement) : null;
-    const permissionForm = document.getElementById('permissionForm');
-    const permissionTitle = document.getElementById('createPermissionModalLabel');
-    const permissionMethod = document.getElementById('permission_method');
-    const permissionFormMode = document.getElementById('permission_form_mode');
-    const permissionId = document.getElementById('permission_id');
-    const permissionName = document.getElementById('permission_name');
-    const permissionSlug = document.getElementById('permission_slug');
-    const permissionSubmit = document.getElementById('permission_submit');
-    const permissionSearch = document.getElementById('permission_search');
-    const permissionRows = Array.from(document.querySelectorAll('.permission-row'));
-    const emptyPermissionSearch = document.getElementById('permissions-empty-search');
-    const permissionStoreUrl = "{{ route('admin.permissions.store') }}";
-    const permissionUpdateBase = "{{ url('admin/permissions') }}";
-
-    function filterPermissions() {
-        const term = (permissionSearch?.value || '').trim().toLowerCase();
-        let visibleCount = 0;
-
-        permissionRows.forEach(row => {
-            const isVisible = !term || (row.dataset.search || '').includes(term);
-            row.classList.toggle('d-none', !isVisible);
-            if (isVisible) {
-                visibleCount++;
+            const modal = bootstrap.Modal.getInstance(document.getElementById('signatureModal'));
+            if (modal) {
+                modal.hide();
             }
         });
 
-        emptyPermissionSearch?.classList.toggle('d-none', !term || permissionRows.length === 0 || visibleCount > 0);
+        clearCanvas();
     }
 
-    permissionSearch?.addEventListener('input', filterPermissions);
-    document.getElementById('btn-clear-permission-search')?.addEventListener('click', function() {
-        if (permissionSearch) {
-            permissionSearch.value = '';
-            filterPermissions();
-            permissionSearch.focus();
-        }
-    });
-    filterPermissions();
+    function processSignatureUpload(input) {
+        const preview = document.getElementById(input.dataset.preview);
+        const signatureData = document.getElementById('signature_data');
 
-    function buildPermissionSlug(value) {
-        return (value || '')
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '_')
-            .replace(/^_+|_+$/g, '');
-    }
+        if (!preview || !input.files || !input.files[0]) return;
 
-    function syncPermissionSlug(force = false) {
-        if (!permissionName || !permissionSlug) {
-            return;
-        }
+        const image = new Image();
+        image.onload = function () {
+            const canvas = document.createElement('canvas');
+            const maxWidth = 900;
+            const scale = Math.min(1, maxWidth / image.width);
+            canvas.width = Math.max(1, Math.round(image.width * scale));
+            canvas.height = Math.max(1, Math.round(image.height * scale));
 
-        if (force || permissionFormMode?.value === 'create') {
-            permissionSlug.value = buildPermissionSlug(permissionName.value);
-        }
-    }
+            const context = canvas.getContext('2d');
+            context.drawImage(image, 0, 0, canvas.width, canvas.height);
 
-    permissionName?.addEventListener('input', function() {
-        syncPermissionSlug();
-    });
+            const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+            const pixels = imageData.data;
 
-    function prepareCreatePermissionModal() {
-        if (!permissionForm) {
-            return;
-        }
+            for (let i = 0; i < pixels.length; i += 4) {
+                const red = pixels[i];
+                const green = pixels[i + 1];
+                const blue = pixels[i + 2];
+                const brightness = (red + green + blue) / 3;
+                const colorDistance = Math.max(red, green, blue) - Math.min(red, green, blue);
 
-        permissionForm.reset();
-        permissionForm.action = permissionStoreUrl;
-        permissionMethod.disabled = true;
-        permissionFormMode.value = 'create';
-        permissionId.value = '';
-        syncPermissionSlug(true);
-        permissionTitle.innerHTML = '<i class="fas fa-key"></i> Nouvelle permission';
-        permissionSubmit.textContent = 'Créer';
-    }
-
-    document.getElementById('btn-create-permission')?.addEventListener('click', prepareCreatePermissionModal);
-
-    document.querySelectorAll('.btn-edit-permission').forEach(button => {
-        button.addEventListener('click', function() {
-            if (!permissionForm || !permissionModal) {
-                return;
+                if (brightness > 205 && colorDistance < 42) {
+                    pixels[i + 3] = 0;
+                }
             }
 
-            permissionForm.reset();
-            permissionForm.action = `${permissionUpdateBase}/${this.dataset.id}`;
-            permissionMethod.disabled = false;
-            permissionMethod.value = 'PUT';
-            permissionFormMode.value = 'update';
-            permissionId.value = this.dataset.id || '';
-            permissionTitle.innerHTML = '<i class="fas fa-edit"></i> Modifier la permission';
-            permissionSubmit.textContent = 'Enregistrer';
+            context.putImageData(imageData, 0, 0);
 
-            permissionName.value = this.dataset.name || '';
-            document.getElementById('permission_module').value = this.dataset.module || '';
-            permissionSlug.value = this.dataset.slug || '';
+            canvas.toBlob(function (blob) {
+                if (!blob) return;
 
-            permissionModal.show();
-        });
-    });
+                const file = new File([blob], 'signature-sans-fond.png', { type: 'image/png' });
+                const transfer = new DataTransfer();
+                transfer.items.add(file);
+                input.files = transfer.files;
 
-    @if($errors->any() && old('permission_form_mode'))
-        if (permissionModal) {
-            @if(old('permission_form_mode') === 'update' && old('permission_id'))
-                permissionForm.action = `${permissionUpdateBase}/{{ old('permission_id') }}`;
-                permissionMethod.disabled = false;
-                permissionMethod.value = 'PUT';
-                permissionFormMode.value = 'update';
-                permissionId.value = '{{ old('permission_id') }}';
-                permissionTitle.innerHTML = '<i class="fas fa-edit"></i> Modifier la permission';
-                permissionSubmit.textContent = 'Enregistrer';
-            @else
-                permissionForm.action = permissionStoreUrl;
-                permissionMethod.disabled = true;
-                permissionFormMode.value = 'create';
-                permissionId.value = '';
-                permissionTitle.innerHTML = '<i class="fas fa-key"></i> Nouvelle permission';
-                permissionSubmit.textContent = 'Créer';
-            @endif
-            permissionModal.show();
-        }
-    @endif
+                if (signatureData) {
+                    signatureData.value = '';
+                }
 
-    const btnCancel = document.getElementById('btn_cancel');
-    if (btnCancel) {
-        btnCancel.addEventListener('click', function() {
-            if (userSelect) {
-                userSelect.value = '';
-            }
-            setAllPermissions(false);
-        });
+                preview.src = URL.createObjectURL(blob);
+                preview.classList.remove('d-none');
+            }, 'image/png');
+        };
+        image.src = URL.createObjectURL(input.files[0]);
     }
+});
 </script>
 @endsection

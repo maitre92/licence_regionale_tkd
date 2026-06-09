@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inscription - sigLAB Manager</title>
+    <title>Inscription - Licence Régionale TKD</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
@@ -118,7 +118,7 @@
     <div class="register-container">
         <div class="card">
             <div class="card-header">
-                <h1>sigLAB Manager</h1>
+                <h1>Licence Régionale TKD</h1>
                 <p>Créer un nouveau compte</p>
             </div>
             <div class="card-body">

@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Modifier utilisateur')
+@section('title', 'Ajouter un utilisateur')
 
 @section('actions')
     <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary">
@@ -13,13 +13,12 @@
     <div class="col-lg-8 mx-auto">
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white">
-                <h5 class="mb-0">Modifier : {{ $user->name }}</h5>
+                <h5 class="mb-0">Nouvel utilisateur</h5>
             </div>
             <div class="card-body">
-                <form action="{{ route('admin.users.update', $user) }}" method="POST">
+                <form action="{{ route('admin.users.store') }}" method="POST">
                     @csrf
-                    @method('PUT')
-                    @include('admin.users._form', ['user' => $user])
+                    @include('admin.users._form', ['user' => null])
                 </form>
             </div>
         </div>

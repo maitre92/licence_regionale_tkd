@@ -1,10 +1,9 @@
 <nav class="navbar navbar-expand-md sticky-top" id="navbar">
     <div class="container-fluid">
         <a class="navbar-brand" href="{{ route('admin.dashboard') }}">
-            <i class="fas fa-flask"></i>
-            <span style="color: var(--primary-color); font-weight: 700;">sig</span>
-            <span style="color: #ef4444; font-weight: 700;">LAB</span>
-            <span style="font-size: 0.9rem; color: var(--navbar-text); margin-left: 6px;">Manager</span>
+            <i class="fas fa-id-card"></i>
+            <span style="color: var(--navbar-text); font-weight: 700;">Licence Régionale</span>
+            <span style="color: #d4af37; font-weight: 700;">TKD</span>
         </a>
         
         <button class="navbar-toggler" type="button" id="sidebarToggle">

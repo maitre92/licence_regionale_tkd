@@ -19,22 +19,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Créer les deux utilisateurs superadmin par défaut
-        User::firstOrCreate(
-            ['email' => 'barrymoustapha485@gmail.com'],
+        // Créer le superadmin par défaut
+        User::updateOrCreate(
+            ['email' => 'maitedjkbarry@icloud.com'],
             [
-                'name' => 'Barry Moustapha',
-                'password' => Hash::make('superadmin123'),
-                'role' => UserRole::SUPERADMIN->value,
-                'status' => UserStatus::ACTIVE->value,
-                'is_active' => true,
-            ]
-        );
-
-        User::firstOrCreate(
-            ['email' => 'oumarouolo2023@gmail.com'],
-            [
-                'name' => 'Oumar Ouolo',
+                'name' => 'Moustapha BARRY',
+                'phone' => '67205736',
                 'password' => Hash::make('superadmin123'),
                 'role' => UserRole::SUPERADMIN->value,
                 'status' => UserStatus::ACTIVE->value,
@@ -43,7 +33,5 @@ class DatabaseSeeder extends Seeder
         );
 
         $this->call(PermissionSeeder::class);
-        $this->call(FormationReferenceSeeder::class);
-        $this->call(PedagogieSeeder::class);
     }
 }

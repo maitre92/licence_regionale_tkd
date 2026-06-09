@@ -10,102 +10,33 @@ class PermissionSeeder extends Seeder
     public function run(): void
     {
         $permissions = [
-            // Utilisateurs
-            ['name' => 'Voir les utilisateurs', 'module' => 'Utilisateurs', 'slug' => 'view_users'],
-            ['name' => 'Ajouter un utilisateur', 'module' => 'Utilisateurs', 'slug' => 'create_user'],
-            ['name' => 'Modifier un utilisateur', 'module' => 'Utilisateurs', 'slug' => 'edit_user'],
-            ['name' => 'Supprimer un utilisateur', 'module' => 'Utilisateurs', 'slug' => 'delete_user'],
+            ['name' => 'Voir les utilisateurs', 'module' => 'Utilisateurs', 'slug' => 'view_users', 'action' => 'view', 'order' => 1],
+            ['name' => 'Ajouter un utilisateur', 'module' => 'Utilisateurs', 'slug' => 'create_user', 'action' => 'create', 'order' => 2],
+            ['name' => 'Modifier un utilisateur', 'module' => 'Utilisateurs', 'slug' => 'edit_user', 'action' => 'edit', 'order' => 3],
+            ['name' => 'Supprimer un utilisateur', 'module' => 'Utilisateurs', 'slug' => 'delete_user', 'action' => 'delete', 'order' => 4],
 
-            // Permissions
-            ['name' => 'Voir les permissions', 'module' => 'Permissions', 'slug' => 'view_permissions'],
-            ['name' => 'Gérer les permissions', 'module' => 'Permissions', 'slug' => 'manage_permissions'],
-            ['name' => 'Ajouter une permission', 'module' => 'Permissions', 'slug' => 'create_permission'],
-            ['name' => 'Supprimer une permission', 'module' => 'Permissions', 'slug' => 'delete_permission'],
+            ['name' => 'Voir les permissions', 'module' => 'Permissions', 'slug' => 'view_permissions', 'action' => 'view', 'order' => 10],
+            ['name' => 'Gérer les permissions', 'module' => 'Permissions', 'slug' => 'manage_permissions', 'action' => 'manage', 'order' => 11],
+            ['name' => 'Ajouter une permission', 'module' => 'Permissions', 'slug' => 'create_permission', 'action' => 'create', 'order' => 12],
+            ['name' => 'Supprimer une permission', 'module' => 'Permissions', 'slug' => 'delete_permission', 'action' => 'delete', 'order' => 13],
 
-            // Apprenants
-            ['name' => 'Voir les apprenants', 'module' => 'Apprenants', 'slug' => 'view_learners'],
-            ['name' => 'Ajouter un apprenant', 'module' => 'Apprenants', 'slug' => 'create_learner'],
-            ['name' => 'Modifier un apprenant', 'module' => 'Apprenants', 'slug' => 'edit_learner'],
-            ['name' => 'Supprimer un apprenant', 'module' => 'Apprenants', 'slug' => 'delete_learner'],
-            ['name' => 'Voir les détails apprenant', 'module' => 'Apprenants', 'slug' => 'view_learner_details'],
+            ['name' => 'Voir les cartes', 'module' => 'Cartes', 'slug' => 'view_licence_holders', 'action' => 'view', 'order' => 20],
+            ['name' => 'Ajouter une carte', 'module' => 'Cartes', 'slug' => 'create_licence_holder', 'action' => 'create', 'order' => 21],
+            ['name' => 'Modifier une carte', 'module' => 'Cartes', 'slug' => 'edit_licence_holder', 'action' => 'edit', 'order' => 22],
+            ['name' => 'Supprimer une carte', 'module' => 'Cartes', 'slug' => 'delete_licence_holder', 'action' => 'delete', 'order' => 23],
 
-            // Formations
-            ['name' => 'Voir les formations', 'module' => 'Formations', 'slug' => 'voir_formations', 'action' => 'view', 'order' => 30],
-            ['name' => 'Ajouter une formation', 'module' => 'Formations', 'slug' => 'ajouter_formation', 'action' => 'create', 'order' => 31],
-            ['name' => 'Modifier une formation', 'module' => 'Formations', 'slug' => 'modifier_formation', 'action' => 'edit', 'order' => 32],
-            ['name' => 'Supprimer une formation', 'module' => 'Formations', 'slug' => 'supprimer_formation', 'action' => 'delete', 'order' => 33],
-            ['name' => 'Voir les détails formation', 'module' => 'Formations', 'slug' => 'voir_details_formation', 'action' => 'view_details', 'order' => 34],
-
-            // Catégories de formation
-            ['name' => 'Voir les catégories de formation', 'module' => 'Catégories de formation', 'slug' => 'voir_categories_formations', 'action' => 'view', 'order' => 35],
-            ['name' => 'Ajouter une catégorie de formation', 'module' => 'Catégories de formation', 'slug' => 'ajouter_categorie_formation', 'action' => 'create', 'order' => 36],
-            ['name' => 'Modifier une catégorie de formation', 'module' => 'Catégories de formation', 'slug' => 'modifier_categorie_formation', 'action' => 'edit', 'order' => 37],
-            ['name' => 'Supprimer une catégorie de formation', 'module' => 'Catégories de formation', 'slug' => 'supprimer_categorie_formation', 'action' => 'delete', 'order' => 38],
-            ['name' => 'Gérer les catégories de formation', 'module' => 'Catégories de formation', 'slug' => 'gerer_categories_formations', 'action' => 'manage', 'order' => 39],
-
-            // Pédagogique
-            ['name' => 'Voir le module pédagogique', 'module' => 'Pédagogique', 'slug' => 'view_pedagogical'],
-            ['name' => 'Voir les présences', 'module' => 'Présences', 'slug' => 'view_attendance'],
-            ['name' => 'Voir les évaluations', 'module' => 'Évaluations', 'slug' => 'view_evaluations'],
-            ['name' => 'Voir les examens', 'module' => 'Examens', 'slug' => 'view_exams'],
-            ['name' => 'Voir les notes', 'module' => 'Notes', 'slug' => 'view_grades'],
-
-            // Emplois du temps
-            ['name' => 'Voir les emplois du temps', 'module' => 'Emplois du Temps', 'slug' => 'view_schedules'],
-
-            // Finances
-            ['name' => 'Voir les finances', 'module' => 'Finances', 'slug' => 'view_finances'],
-            ['name' => 'Voir les paiements', 'module' => 'Paiements', 'slug' => 'view_payments'],
-            ['name' => 'Voir les dépenses', 'module' => 'Dépenses', 'slug' => 'view_expenses'],
-            ['name' => 'Voir les recettes', 'module' => 'Recettes', 'slug' => 'view_revenue'],
-            ['name' => 'Modifier une dépense', 'module' => 'Dépenses', 'slug' => 'edit_expense'],
-            ['name' => 'Supprimer une dépense', 'module' => 'Dépenses', 'slug' => 'delete_expense'],
-            ['name' => 'Modifier un versement formateur', 'module' => 'Finances', 'slug' => 'edit_trainer_payment'],
-            ['name' => 'Supprimer un versement formateur', 'module' => 'Finances', 'slug' => 'delete_trainer_payment'],
-
-            // Attestations
-            ['name' => 'Voir les attestations', 'module' => 'Attestations', 'slug' => 'view_certificates'],
-
-            // Documents
-            ['name' => 'Voir les documents', 'module' => 'Documents', 'slug' => 'view_documents'],
-
-            // Rapports
-            ['name' => 'Voir les rapports', 'module' => 'Rapports', 'slug' => 'view_reports'],
-
-            // Mouvements / Pilotage
-            ['name' => 'Voir les mouvements et le pilotage', 'module' => 'Mouvements', 'slug' => 'view_movements'],
-
-            // Traçabilité
-            ['name' => 'Voir la traçabilité', 'module' => 'Traçabilité', 'slug' => 'view_audit'],
-
-            // Paramètres
-            ['name' => 'manage_settings', 'module' => 'Paramètres', 'slug' => 'manage_settings'],
+            ['name' => 'Gérer les paramètres', 'module' => 'Paramètres', 'slug' => 'manage_settings', 'action' => 'manage', 'order' => 30],
         ];
 
         foreach ($permissions as $permission) {
-            $existing = Permission::withTrashed()->where('slug', $permission['slug'])->first();
+            $model = Permission::withTrashed()->firstOrNew(['slug' => $permission['slug']]);
 
-            if ($existing) {
-                if ($existing->trashed()) {
-                    $existing->restore();
-                }
-
-                $nameAlreadyUsed = Permission::where('name', $permission['name'])
-                    ->where('id', '!=', $existing->id)
-                    ->exists();
-
-                if ($nameAlreadyUsed) {
-                    unset($permission['name']);
-                }
-
-                $existing->update($permission);
-            } else {
-                if (Permission::where('name', $permission['name'])->exists()) {
-                    $permission['name'] = $permission['name'] . ' (' . $permission['slug'] . ')';
-                }
-
-                Permission::create($permission);
+            if ($model->exists && $model->trashed()) {
+                $model->restore();
             }
+
+            $model->fill(array_merge($permission, ['is_active' => true]));
+            $model->save();
         }
     }
 }

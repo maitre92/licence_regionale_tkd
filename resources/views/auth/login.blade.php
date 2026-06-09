@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion - sigLAB Manager</title>
+    <title>Connexion - Licence Régionale TKD</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -33,7 +33,7 @@
         .image-side {
             flex: 1;
             position: relative;
-            background: url('{{ asset('images/siglab_img1.jpeg') }}') center top/cover no-repeat var(--login-primary);
+            background: url('{{ asset('images/dojaManager.png') }}') center top/cover no-repeat var(--login-primary);
         }
 
         .login-side {
@@ -233,10 +233,10 @@
                 <div class="card login-card">
                     <div class="login-header">
                         <div class="brand-mark">
-                            <i class="fas fa-flask"></i>
+                            <i class="fas fa-id-card"></i>
                         </div>
-                        <h1><span style="color:#6f8bd8;">sig</span><span style="color:#ef4444;">LAB</span> Manager</h1>
-                        <p>Connectez-vous à votre espace de gestion.</p>
+                        <h1>Licence Régionale TKD</h1>
+                        <p>Connectez-vous à votre espace cartes.</p>
                     </div>
 
                     <div class="login-body">
@@ -270,15 +270,15 @@
                             @csrf
 
                             <div class="mb-3">
-                                <label for="email" class="form-label">Adresse email</label>
-                                <input type="email"
-                                       class="form-control @error('email') is-invalid @enderror"
-                                       id="email"
-                                       name="email"
-                                       value="{{ old('email') }}"
-                                       placeholder="nom@exemple.com"
+                                <label for="phone" class="form-label">Numéro de téléphone</label>
+                                <input type="text"
+                                       class="form-control @error('phone') is-invalid @enderror"
+                                       id="phone"
+                                       name="phone"
+                                       value="{{ old('phone') }}"
+                                       placeholder="67205736"
                                        autofocus>
-                                @error('email')
+                                @error('phone')
                                     <span class="invalid-feedback">{{ $message }}</span>
                                 @enderror
                             </div>

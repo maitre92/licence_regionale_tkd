@@ -133,7 +133,7 @@ APP_URL=http://localhost:8000
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=siglab_manager
+DB_DATABASE=db_taek_segou
 DB_USERNAME=root
 DB_PASSWORD=
 ```
@@ -247,4 +247,3 @@ git push origin main
 ## Licence
 
 Projet propriétaire - sigLAB.
-

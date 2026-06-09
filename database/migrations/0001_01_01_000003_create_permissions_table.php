@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name')->unique();
             $table->string('slug')->unique();
             $table->text('description')->nullable();
-            $table->string('module')->nullable(); // e.g., 'users', 'formations', 'finances'
+            $table->string('module')->nullable(); // e.g., 'users', 'cards', 'settings'
             $table->string('action')->nullable(); // e.g., 'view', 'create', 'edit', 'delete'
             $table->integer('order')->default(0);
             $table->boolean('is_active')->default(true);

@@ -138,37 +138,11 @@ class PermissionService
             ['name' => 'Modifier un utilisateur', 'slug' => 'edit_user', 'module' => 'users', 'action' => 'edit'],
             ['name' => 'Supprimer un utilisateur', 'slug' => 'delete_user', 'module' => 'users', 'action' => 'delete'],
 
-            // Gestion des formations
-            ['name' => 'Voir les formations', 'slug' => 'view_formations', 'module' => 'formations', 'action' => 'view'],
-            ['name' => 'Ajouter une formation', 'slug' => 'create_formation', 'module' => 'formations', 'action' => 'create'],
-            ['name' => 'Modifier une formation', 'slug' => 'edit_formation', 'module' => 'formations', 'action' => 'edit'],
-            ['name' => 'Supprimer une formation', 'slug' => 'delete_formation', 'module' => 'formations', 'action' => 'delete'],
-
-            // Gestion financière
-            ['name' => 'Voir les finances', 'slug' => 'view_finances', 'module' => 'finances', 'action' => 'view'],
-            ['name' => 'Ajouter une transaction', 'slug' => 'create_transaction', 'module' => 'finances', 'action' => 'create'],
-            ['name' => 'Modifier une transaction', 'slug' => 'edit_transaction', 'module' => 'finances', 'action' => 'edit'],
-            ['name' => 'Supprimer une transaction', 'slug' => 'delete_transaction', 'module' => 'finances', 'action' => 'delete'],
-
-            // Gestion des attestations
-            ['name' => 'Voir les attestations', 'slug' => 'view_attestations', 'module' => 'attestations', 'action' => 'view'],
-            ['name' => 'Créer une attestation', 'slug' => 'create_attestation', 'module' => 'attestations', 'action' => 'create'],
-
-            // Gestion des emplois du temps
-            ['name' => 'Voir les emplois du temps', 'slug' => 'view_schedules', 'module' => 'schedules', 'action' => 'view'],
-            ['name' => 'Gérer les emplois du temps', 'slug' => 'manage_schedules', 'module' => 'schedules', 'action' => 'edit'],
-
-            // Gestion des évaluations
-            ['name' => 'Voir les évaluations', 'slug' => 'view_evaluations', 'module' => 'evaluations', 'action' => 'view'],
-            ['name' => 'Créer une évaluation', 'slug' => 'create_evaluation', 'module' => 'evaluations', 'action' => 'create'],
-
-            // Statistiques et rapports
-            ['name' => 'Voir les statistiques', 'slug' => 'view_statistics', 'module' => 'statistics', 'action' => 'view'],
-            ['name' => 'Voir les rapports', 'slug' => 'view_reports', 'module' => 'reports', 'action' => 'view'],
-
-            // Gestion documentaire
-            ['name' => 'Voir les documents', 'slug' => 'view_documents', 'module' => 'documents', 'action' => 'view'],
-            ['name' => 'Ajouter un document', 'slug' => 'create_document', 'module' => 'documents', 'action' => 'create'],
+            // Gestion des cartes
+            ['name' => 'Voir les cartes', 'slug' => 'view_licence_holders', 'module' => 'cards', 'action' => 'view'],
+            ['name' => 'Ajouter une carte', 'slug' => 'create_licence_holder', 'module' => 'cards', 'action' => 'create'],
+            ['name' => 'Modifier une carte', 'slug' => 'edit_licence_holder', 'module' => 'cards', 'action' => 'edit'],
+            ['name' => 'Supprimer une carte', 'slug' => 'delete_licence_holder', 'module' => 'cards', 'action' => 'delete'],
 
             // Gestion des permissions
             ['name' => 'Voir les permissions', 'slug' => 'view_permissions', 'module' => 'permissions', 'action' => 'view'],
@@ -176,7 +150,7 @@ class PermissionService
 
             // Système
             ['name' => 'Accéder au tableau de bord', 'slug' => 'access_dashboard', 'module' => 'dashboard', 'action' => 'view'],
-            ['name' => 'Voir les logs d\'activité', 'slug' => 'view_activity_logs', 'module' => 'system', 'action' => 'view'],
+            ['name' => 'Gérer les paramètres', 'slug' => 'manage_settings', 'module' => 'settings', 'action' => 'edit'],
         ];
 
         foreach ($permissions as $permission) {

@@ -62,31 +62,28 @@ class AppServiceProvider extends ServiceProvider
 
         $superAdmins = User::where('role', UserRole::SUPERADMIN->value)->get();
 
-        // Si aucun superadmin n'existe, créer deux comptes par défaut à partir des variables d'environnement
+        // Si aucun superadmin n'existe, créer le compte superadmin par défaut.
         if ($superAdmins->count() === 0) {
             $defaults = [
                 [
-                    'name' => env('DEFAULT_SUPERADMIN_NAME_1', 'Barry Moustapha'),
-                    'email' => env('DEFAULT_SUPERADMIN_EMAIL_1', 'barrymoustapha485@gmail.com'),
-                    'password' => env('DEFAULT_SUPERADMIN_PASSWORD_1', 'superadmin123'),
-                ],
-                [
-                    'name' => env('DEFAULT_SUPERADMIN_NAME_2', 'Oumar Ouolo'),
-                    'email' => env('DEFAULT_SUPERADMIN_EMAIL_2', 'oumarouolo2023@gmail.com'),
-                    'password' => env('DEFAULT_SUPERADMIN_PASSWORD_2', 'superadmin123'),
+                    'name' => env('DEFAULT_SUPERADMIN_NAME', 'Moustapha BARRY'),
+                    'email' => env('DEFAULT_SUPERADMIN_EMAIL', 'maitedjkbarry@icloud.com'),
+                    'phone' => env('DEFAULT_SUPERADMIN_PHONE', '67205736'),
+                    'password' => env('DEFAULT_SUPERADMIN_PASSWORD', 'superadmin123'),
                 ],
             ];
 
             foreach ($defaults as $d) {
                 try {
-                    $user = User::firstOrCreate(
+                    $user = User::updateOrCreate(
                         ['email' => $d['email']],
                         [
                             'name' => $d['name'],
+                            'phone' => $d['phone'],
                             'password' => Hash::make($d['password']),
                             'role' => UserRole::SUPERADMIN->value,
                             'is_active' => true,
-                            'status' => null,
+                            'status' => \App\Shared\Enums\UserStatus::ACTIVE->value,
                         ]
                     );
 

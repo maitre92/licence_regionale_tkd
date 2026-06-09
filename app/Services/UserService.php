@@ -177,6 +177,14 @@ class UserService
     }
 
     /**
+     * Trouver un utilisateur par téléphone
+     */
+    public function findByPhone(string $phone): ?User
+    {
+        return User::where('phone', $phone)->first();
+    }
+
+    /**
      * Trouver un utilisateur par ID
      */
     public function find(int $id): ?User

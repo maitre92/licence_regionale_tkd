@@ -34,19 +34,7 @@ class CheckPermission
                 $module = 'Autre';
                 if (str_contains($slug, 'user')) $module = 'Utilisateurs';
                 if (str_contains($slug, 'permission')) $module = 'Permissions';
-                if (str_contains($slug, 'apprenant') || str_contains($slug, 'learner')) $module = 'Apprenants';
-                if (str_contains($slug, 'formation') || str_contains($slug, 'course')) $module = 'Formations';
-                if (str_contains($slug, 'categorie') || str_contains($slug, 'category')) $module = 'Catégories de formation';
-                if (str_contains($slug, 'attestation')) $module = 'Attestations';
-                if (str_contains($slug, 'document')) $module = 'Documents';
-                if (str_contains($slug, 'rapport')) $module = 'Rapports';
-                if (str_contains($slug, 'note') || str_contains($slug, 'grade')) $module = 'Notes';
-                if (str_contains($slug, 'finance')) $module = 'Finances';
-                if (str_contains($slug, 'paiement') || str_contains($slug, 'payment')) $module = 'Paiements';
-                if (str_contains($slug, 'depense') || str_contains($slug, 'expense')) $module = 'Dépenses';
-                if (str_contains($slug, 'recette') || str_contains($slug, 'revenue')) $module = 'Recettes';
-                if (str_contains($slug, 'movement') || str_contains($slug, 'mouvement')) $module = 'Mouvements';
-                if (str_contains($slug, 'emploi') || str_contains($slug, 'schedule')) $module = 'Emplois du Temps';
+                if (str_contains($slug, 'licence')) $module = 'Cartes';
                 if (str_contains($slug, 'parametre') || str_contains($slug, 'setting')) $module = 'Paramètres';
                 \App\Models\Permission::create([
                     'name' => $nom,

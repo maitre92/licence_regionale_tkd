@@ -32,19 +32,19 @@
                     </tr>
                     <tr>
                         <th>Rôle:</th>
-                        <td><span class="badge bg-info">{{ $user->role?->label() }}</span></td>
+                        <td><span class="badge bg-info">{{ \App\Shared\Enums\UserRole::tryFrom($user->role)?->label() ?? $user->role }}</span></td>
                     </tr>
                     <tr>
                         <th>Statut:</th>
-                        <td><span class="badge bg-{{ $user->status?->color() }}">{{ $user->status?->label() }}</span></td>
+                        <td><span class="badge bg-secondary">{{ \App\Shared\Enums\UserStatus::tryFrom($user->status)?->label() ?? $user->status }}</span></td>
                     </tr>
                     <tr>
                         <th>Créé le:</th>
-                        <td>{{ $user->formatted_created_at }}</td>
+                        <td>{{ optional($user->created_at)->format('d/m/Y H:i') ?? '-' }}</td>
                     </tr>
                     <tr>
                         <th>Modifié le:</th>
-                        <td>{{ $user->formatted_updated_at }}</td>
+                        <td>{{ optional($user->updated_at)->format('d/m/Y H:i') ?? '-' }}</td>
                     </tr>
                 </table>
             </div>

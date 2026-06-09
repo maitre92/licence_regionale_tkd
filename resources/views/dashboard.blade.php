@@ -13,6 +13,6 @@
 <!-- Dashboard Vide -->
 <div class="text-center py-5">
     <i class="fas fa-inbox" style="font-size: 64px; color: #ccc;"></i>
-    <p class="mt-4 text-muted">Bienvenue dans le tableau de bord de sigLAB Manager</p>
+    <p class="mt-4 text-muted">Bienvenue dans Licence Régionale TKD</p>
 </div>
 @endsection
