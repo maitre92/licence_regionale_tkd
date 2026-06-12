@@ -35,6 +35,7 @@ class CheckPermission
                 if (str_contains($slug, 'user')) $module = 'Utilisateurs';
                 if (str_contains($slug, 'permission')) $module = 'Permissions';
                 if (str_contains($slug, 'licence')) $module = 'Cartes';
+                if (str_contains($slug, 'school_card')) $module = 'Carte Scolaire';
                 if (str_contains($slug, 'parametre') || str_contains($slug, 'setting')) $module = 'Paramètres';
                 \App\Models\Permission::create([
                     'name' => $nom,
@@ -45,8 +46,12 @@ class CheckPermission
             }
         }
 
-        // Super admin peut accéder à tout
-        if ($user->isSuperAdmin()) {
+        $schoolPermissionRequested = collect($permissions)->contains(
+            fn (string $permission) => str_contains($permission, 'school_card')
+        );
+
+        // Super admin et président ont accès à tout, sauf le scolaire qui reste accordé explicitement.
+        if ($user->hasFullAccess() && (!$schoolPermissionRequested || $user->isSuperAdmin())) {
             return $next($request);
         }
 

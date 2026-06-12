@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Paramètres')
+@section('title', __('messages.settings'))
 
 @section('content')
 @php
@@ -12,29 +12,29 @@
     <div class="col-md-3">
         <div class="card border-0 shadow-sm">
             <div class="card-header text-white" style="background-color: var(--navbar-bg);">
-                <h5 class="mb-0"><i class="fas fa-bars"></i> Menu</h5>
+                <h5 class="mb-0"><i class="fas fa-bars"></i> {{ __('messages.settings_page.menu') }}</h5>
             </div>
             <div class="list-group list-group-flush settings-nav">
                 <a href="#" class="list-group-item list-group-item-action settings-menu-item" data-target="official-info">
-                    <i class="fas fa-landmark"></i> Informations officielles
+                    <i class="fas fa-landmark"></i> {{ __('messages.settings_page.official_info') }}
                 </a>
                 <a href="#" class="list-group-item list-group-item-action settings-menu-item" data-target="signature">
-                    <i class="fas fa-signature"></i> Signature électronique
+                    <i class="fas fa-signature"></i> {{ __('messages.settings_page.signature') }}
                 </a>
                 <a href="#" class="list-group-item list-group-item-action settings-menu-item" data-target="card-models">
-                    <i class="fas fa-id-card"></i> Modèles de cartes
+                    <i class="fas fa-id-card"></i> {{ __('messages.settings_page.card_models') }}
                 </a>
                 <a href="#" class="list-group-item list-group-item-action settings-menu-item" data-target="appearance">
-                    <i class="fas fa-palette"></i> Apparence
+                    <i class="fas fa-palette"></i> {{ __('messages.settings_page.appearance') }}
                 </a>
                 <a href="#" class="list-group-item list-group-item-action settings-menu-item" data-target="users-list">
-                    <i class="fas fa-users"></i> Utilisateurs
+                    <i class="fas fa-users"></i> {{ __('messages.settings_page.users') }}
                 </a>
                 <a href="#" class="list-group-item list-group-item-action settings-menu-item" data-target="permissions-list">
-                    <i class="fas fa-key"></i> Permissions
+                    <i class="fas fa-key"></i> {{ __('messages.settings_page.permissions') }}
                 </a>
                 <a href="#" class="list-group-item list-group-item-action settings-menu-item" data-target="permissions-assign">
-                    <i class="fas fa-user-check"></i> Assigner permission
+                    <i class="fas fa-user-check"></i> {{ __('messages.settings_page.assign_permission') }}
                 </a>
             </div>
         </div>
@@ -48,31 +48,31 @@
                     <input type="hidden" name="settings_section" value="official-info">
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-white">
-                        <h5 class="mb-0"><i class="fas fa-landmark me-2"></i> Informations officielles</h5>
+                        <h5 class="mb-0"><i class="fas fa-landmark me-2"></i> {{ __('messages.settings_page.official_info') }}</h5>
                     </div>
                     <div class="card-body">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label" for="ministry">Ministère</label>
+                                <label class="form-label" for="ministry">{{ __('messages.settings_page.ministry') }}</label>
                                 <input type="text" class="form-control" id="ministry" name="ministry" value="{{ old('ministry', $settings['official']['ministry']) }}" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label" for="federation">Fédération</label>
+                                <label class="form-label" for="federation">{{ __('messages.settings_page.federation') }}</label>
                                 <input type="text" class="form-control" id="federation" name="federation" value="{{ old('federation', $settings['official']['federation']) }}" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label" for="league">Ligue</label>
+                                <label class="form-label" for="league">{{ __('messages.settings_page.league') }}</label>
                                 <input type="text" class="form-control" id="league" name="league" value="{{ old('league', $settings['official']['league']) }}" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label" for="motto">Devise du Taekwondo</label>
+                                <label class="form-label" for="motto">{{ __('messages.settings_page.motto') }}</label>
                                 <input type="text" class="form-control" id="motto" name="motto" value="{{ old('motto', $settings['official']['motto']) }}">
                             </div>
                         </div>
                     </div>
                     <div class="card-footer bg-white text-end">
                         <button type="submit" class="btn text-white" style="background-color: var(--navbar-bg);">
-                            <i class="fas fa-save me-1"></i> Enregistrer
+                            <i class="fas fa-save me-1"></i> {{ __('messages.save') }}
                         </button>
                     </div>
                 </div>
@@ -86,36 +86,36 @@
                     <input type="hidden" name="settings_section" value="signature">
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-white">
-                        <h5 class="mb-0"><i class="fas fa-signature me-2"></i> Signature électronique</h5>
+                        <h5 class="mb-0"><i class="fas fa-signature me-2"></i> {{ __('messages.settings_page.signature') }}</h5>
                     </div>
                     <div class="card-body">
                         <div class="row align-items-center g-4">
                             <div class="col-md-5 text-center">
                                 @if($settings['signature_path'])
-                                    <img src="{{ \App\Support\CardSettings::publicUrl($settings['signature_path']) }}" alt="Signature actuelle" class="img-fluid border rounded p-3 bg-white" style="max-height: 160px;">
+                                    <img src="{{ \App\Support\CardSettings::publicUrl($settings['signature_path']) }}" alt="{{ __('messages.settings_page.current_signature') }}" class="img-fluid border rounded p-3 bg-white" style="max-height: 160px;">
                                 @else
-                                    <div class="border rounded bg-light py-5 text-muted">Aucune signature</div>
+                                    <div class="border rounded bg-light py-5 text-muted">{{ __('messages.settings_page.no_signature') }}</div>
                                 @endif
                             </div>
                             <div class="col-md-7">
                                 <input type="hidden" id="signature_data" name="signature_data" value="">
                                 <div class="d-flex flex-wrap gap-2 mb-3">
                                     <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#signatureModal">
-                                        <i class="fas fa-pen-nib me-1"></i> Signer
+                                        <i class="fas fa-pen-nib me-1"></i> {{ __('messages.settings_page.sign') }}
                                     </button>
                                     <label class="btn btn-outline-secondary mb-0" for="signature_file">
-                                        <i class="fas fa-upload me-1"></i> Uploader
+                                        <i class="fas fa-upload me-1"></i> {{ __('messages.settings_page.upload') }}
                                     </label>
                                 </div>
                                 <input type="file" class="form-control d-none" id="signature_file" name="signature" accept="image/jpeg,image/png,image/webp,image/jpg" data-preview="signaturePreview">
-                                <div class="form-text">L'upload retire automatiquement le fond clair de l'image.</div>
-                                <img id="signaturePreview" class="img-fluid border rounded p-2 bg-white mt-3 d-none" style="max-height: 150px;" alt="Prévisualisation signature">
+                                <div class="form-text">{{ __('messages.settings_page.upload_removes_bg') }}</div>
+                                <img id="signaturePreview" class="img-fluid border rounded p-2 bg-white mt-3 d-none" style="max-height: 150px;" alt="{{ __('messages.settings_page.signature_preview') }}">
                             </div>
                         </div>
                     </div>
                     <div class="card-footer bg-white text-end">
                         <button type="submit" class="btn text-white" style="background-color: var(--navbar-bg);">
-                            <i class="fas fa-save me-1"></i> Enregistrer
+                            <i class="fas fa-save me-1"></i> {{ __('messages.save') }}
                         </button>
                     </div>
                 </div>
@@ -129,11 +129,11 @@
                     <input type="hidden" name="settings_section" value="card-models">
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-white">
-                        <h5 class="mb-0"><i class="fas fa-id-card me-2"></i> Modèles de cartes</h5>
+                        <h5 class="mb-0"><i class="fas fa-id-card me-2"></i> {{ __('messages.settings_page.card_models') }}</h5>
                     </div>
                     <div class="card-body">
                         <div class="row g-3">
-                            @foreach(['classic' => 'Classique', 'modern' => 'Moderne', 'minimal' => 'Minimal'] as $value => $label)
+                            @foreach(['classic' => __('messages.settings_page.classic'), 'modern' => __('messages.settings_page.modern'), 'minimal' => __('messages.settings_page.minimal')] as $value => $label)
                                 <div class="col-md-4">
                                     <label class="card-template-option w-100">
                                         <input type="radio" name="default_template" value="{{ $value }}" class="d-none" {{ old('default_template', $settings['card']['default_template']) === $value ? 'checked' : '' }}>
@@ -149,7 +149,7 @@
                     </div>
                     <div class="card-footer bg-white text-end">
                         <button type="submit" class="btn text-white" style="background-color: var(--navbar-bg);">
-                            <i class="fas fa-save me-1"></i> Enregistrer
+                            <i class="fas fa-save me-1"></i> {{ __('messages.save') }}
                         </button>
                     </div>
                 </div>
@@ -163,55 +163,55 @@
                     <input type="hidden" name="settings_section" value="appearance">
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-white">
-                        <h5 class="mb-0"><i class="fas fa-palette me-2"></i> Apparence</h5>
+                        <h5 class="mb-0"><i class="fas fa-palette me-2"></i> {{ __('messages.settings_page.appearance') }}</h5>
                     </div>
                     <div class="card-body">
                         <div class="row g-3">
                             <div class="col-md-4">
-                                <label class="form-label" for="primary_color">Couleur principale</label>
+                                <label class="form-label" for="primary_color">{{ __('messages.settings_page.primary_color') }}</label>
                                 <input type="color" class="form-control form-control-color" id="primary_color" name="primary_color" value="{{ old('primary_color', $settings['card']['primary_color']) }}">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label" for="secondary_color">Couleur secondaire</label>
+                                <label class="form-label" for="secondary_color">{{ __('messages.settings_page.secondary_color') }}</label>
                                 <input type="color" class="form-control form-control-color" id="secondary_color" name="secondary_color" value="{{ old('secondary_color', $settings['card']['secondary_color']) }}">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label" for="background_color">Arrière-plan de la carte</label>
+                                <label class="form-label" for="background_color">{{ __('messages.settings_page.card_background') }}</label>
                                 <input type="color" class="form-control form-control-color" id="background_color" name="background_color" value="{{ old('background_color', $settings['card']['background_color']) }}">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label" for="background_image">Image d'arrière-plan</label>
+                                <label class="form-label" for="background_image">{{ __('messages.settings_page.background_image') }}</label>
                                 <input type="file" class="form-control" id="background_image" name="background_image" accept="image/jpeg,image/png,image/webp,image/jpg" data-preview="backgroundPreview">
                                 @if($settings['card']['background_image_path'])
-                                    <img src="{{ \App\Support\CardSettings::publicUrl($settings['card']['background_image_path']) }}" class="img-fluid border rounded mt-3" style="max-height: 150px;" alt="Arrière-plan actuel">
+                                    <img src="{{ \App\Support\CardSettings::publicUrl($settings['card']['background_image_path']) }}" class="img-fluid border rounded mt-3" style="max-height: 150px;" alt="{{ __('messages.settings_page.current_background') }}">
                                     <div class="form-check mt-2">
                                         <input class="form-check-input" type="checkbox" value="1" id="remove_background_image" name="remove_background_image">
                                         <label class="form-check-label text-danger fw-semibold" for="remove_background_image">
-                                            Retirer l'image d'arrière-plan
+                                            {{ __('messages.settings_page.remove_background') }}
                                         </label>
                                     </div>
                                 @endif
-                                <img id="backgroundPreview" class="img-fluid border rounded mt-3 d-none" style="max-height: 150px;" alt="Prévisualisation arrière-plan">
+                                <img id="backgroundPreview" class="img-fluid border rounded mt-3 d-none" style="max-height: 150px;" alt="{{ __('messages.settings_page.current_background') }}">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label" for="decorative_image">Image décorative</label>
+                                <label class="form-label" for="decorative_image">{{ __('messages.settings_page.decorative_image') }}</label>
                                 <input type="file" class="form-control" id="decorative_image" name="decorative_image" accept="image/jpeg,image/png,image/webp,image/jpg" data-preview="decorativePreview">
                                 @if($settings['card']['decorative_image_path'])
-                                    <img src="{{ \App\Support\CardSettings::publicUrl($settings['card']['decorative_image_path']) }}" class="img-fluid border rounded mt-3" style="max-height: 150px;" alt="Décoration actuelle">
+                                    <img src="{{ \App\Support\CardSettings::publicUrl($settings['card']['decorative_image_path']) }}" class="img-fluid border rounded mt-3" style="max-height: 150px;" alt="{{ __('messages.settings_page.current_decoration') }}">
                                     <div class="form-check mt-2">
                                         <input class="form-check-input" type="checkbox" value="1" id="remove_decorative_image" name="remove_decorative_image">
                                         <label class="form-check-label text-danger fw-semibold" for="remove_decorative_image">
-                                            Retirer l'image décorative
+                                            {{ __('messages.settings_page.remove_decoration') }}
                                         </label>
                                     </div>
                                 @endif
-                                <img id="decorativePreview" class="img-fluid border rounded mt-3 d-none" style="max-height: 150px;" alt="Prévisualisation décoration">
+                                <img id="decorativePreview" class="img-fluid border rounded mt-3 d-none" style="max-height: 150px;" alt="{{ __('messages.settings_page.current_decoration') }}">
                             </div>
                         </div>
                     </div>
                     <div class="card-footer bg-white text-end">
                         <button type="submit" class="btn text-white" style="background-color: var(--navbar-bg);">
-                            <i class="fas fa-save me-1"></i> Enregistrer
+                            <i class="fas fa-save me-1"></i> {{ __('messages.save') }}
                         </button>
                     </div>
                 </div>
@@ -221,17 +221,23 @@
         <div class="settings-content" id="users-list" style="display: none;">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white d-flex align-items-center justify-content-between">
-                    <h5 class="mb-0"><i class="fas fa-users me-2"></i> Utilisateurs</h5>
-                    <a href="{{ route('admin.users.index') }}" class="btn btn-sm btn-outline-secondary">Gérer</a>
+                    <h5 class="mb-0"><i class="fas fa-users me-2"></i> {{ __('messages.settings_page.users') }}</h5>
+                    <div class="d-flex gap-2">
+                        @if(Auth::user()->hasFullAccess() || Auth::user()->hasPermission('create_user'))
+                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createUserModal">
+                                <i class="fas fa-plus"></i> {{ __('messages.add') }}
+                            </button>
+                        @endif
+                    </div>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-hover mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th>Nom</th>
-                                <th>Email</th>
-                                <th>Rôle</th>
-                                <th>Statut</th>
+                                <th>{{ __('messages.name') }}</th>
+                                <th>{{ __('messages.email') }}</th>
+                                <th>{{ __('messages.role') }}</th>
+                                <th>{{ __('messages.status') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -239,11 +245,11 @@
                                 <tr>
                                     <td>{{ $u->name }}</td>
                                     <td>{{ $u->email }}</td>
-                                    <td>{{ $u->role }}</td>
-                                    <td>{{ $u->status }}</td>
+                                    <td>{{ \App\Shared\Enums\UserRole::tryFrom($u->role)?->label() ?? $u->role }}</td>
+                                    <td>{{ \App\Shared\Enums\UserStatus::tryFrom($u->status)?->label() ?? $u->status }}</td>
                                 </tr>
                             @empty
-                                <tr><td colspan="4" class="text-center py-4 text-muted">Aucun utilisateur</td></tr>
+                                <tr><td colspan="4" class="text-center py-4 text-muted">{{ __('messages.users.none') }}</td></tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -254,15 +260,15 @@
         <div class="settings-content" id="permissions-list" style="display: none;">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="fas fa-key me-2"></i> Permissions</h5>
+                    <h5 class="mb-0"><i class="fas fa-key me-2"></i> {{ __('messages.settings_page.permissions') }}</h5>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-hover mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th>Nom</th>
-                                <th>Module</th>
-                                <th>Identifiant</th>
+                                <th>{{ __('messages.name') }}</th>
+                                <th>{{ __('messages.settings_page.module') }}</th>
+                                <th>{{ __('messages.settings_page.identifier') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -273,7 +279,7 @@
                                     <td><code>{{ $p->slug }}</code></td>
                                 </tr>
                             @empty
-                                <tr><td colspan="3" class="text-center py-4 text-muted">Aucune permission</td></tr>
+                                <tr><td colspan="3" class="text-center py-4 text-muted">{{ __('messages.settings_page.no_permission') }}</td></tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -284,17 +290,20 @@
         <div class="settings-content" id="permissions-assign" style="display: none;">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="fas fa-user-check me-2"></i> Assigner permission</h5>
+                    <h5 class="mb-0"><i class="fas fa-user-check me-2"></i> {{ __('messages.settings_page.assign_permission') }}</h5>
                 </div>
                 <div class="card-body">
                     <form action="{{ route('admin.permissions.assign') }}" method="POST">
                         @csrf
+                        @php
+                            $visiblePermissionIds = collect($permissions ?? [])->pluck('id')->all();
+                        @endphp
                         <div class="mb-3">
-                            <label for="user_select" class="form-label">Utilisateur</label>
+                            <label for="user_select" class="form-label">{{ __('messages.roles.user') }}</label>
                             <select class="form-select" id="user_select" name="user_id" required>
-                                <option value="">-- Choisir un utilisateur --</option>
+                                <option value="">{{ __('messages.choose_user') }}</option>
                                 @foreach($users ?? [] as $user)
-                                    <option value="{{ $user->id }}" data-permissions="{{ $user->permissions->pluck('id')->join(',') }}">
+                                    <option value="{{ $user->id }}" data-permissions="{{ $user->permissions->pluck('id')->intersect($visiblePermissionIds)->join(',') }}">
                                         {{ $user->name }} ({{ $user->email }})
                                     </option>
                                 @endforeach
@@ -315,15 +324,33 @@
                                     </div>
                                 </div>
                             @empty
-                                <div class="col-12 text-center py-4 text-muted">Aucune permission disponible</div>
+                                <div class="col-12 text-center py-4 text-muted">{{ __('messages.settings_page.no_permission_available') }}</div>
                             @endforelse
                         </div>
 
                         <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save me-1"></i> Sauvegarder
+                            <i class="fas fa-save me-1"></i> {{ __('messages.save') }}
                         </button>
                     </form>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="createUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-user-plus me-2"></i> {{ __('messages.users.add') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('messages.cancel') }}"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ route('admin.users.store') }}" method="POST" id="createUserForm">
+                    @csrf
+                    <input type="hidden" name="back_to_settings" value="1">
+                    @include('admin.users._form', ['user' => null, 'showCancel' => false, 'showEmail' => false])
+                </form>
             </div>
         </div>
     </div>
@@ -333,8 +360,8 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="fas fa-signature me-2"></i> Signature électronique</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                <h5 class="modal-title"><i class="fas fa-signature me-2"></i> {{ __('messages.settings_page.signature') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('messages.cancel') }}"></button>
             </div>
             <div class="modal-body">
                 <div class="signature-pad-wrap">
@@ -342,9 +369,9 @@
                 </div>
             </div>
             <div class="modal-footer border-0">
-                <button type="button" class="btn btn-outline-secondary" id="clearSignaturePad">Effacer</button>
+                <button type="button" class="btn btn-outline-secondary" id="clearSignaturePad">{{ __('messages.settings_page.clear') }}</button>
                 <button type="button" class="btn text-white" id="useSignaturePad" style="background-color: var(--navbar-bg);">
-                    Utiliser cette signature
+                    {{ __('messages.settings_page.use_signature') }}
                 </button>
             </div>
         </div>
@@ -438,6 +465,9 @@ document.addEventListener('DOMContentLoaded', function () {
     function showTab(target) {
         contents.forEach(content => content.style.display = content.id === target ? 'block' : 'none');
         menuItems.forEach(item => item.classList.toggle('active', item.dataset.target === target));
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', target);
+        window.history.replaceState({}, '', url);
     }
 
     menuItems.forEach(item => {

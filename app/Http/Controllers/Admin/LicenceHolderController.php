@@ -44,7 +44,7 @@ class LicenceHolderController extends Controller
                 ->orderBy('salle')
                 ->pluck('salle'),
             'grades' => $this->grades(),
-            'page_title' => 'Gestion des cartes',
+            'page_title' => __('messages.cards.title'),
             'active_menu' => 'cards',
         ]);
     }
@@ -59,7 +59,7 @@ class LicenceHolderController extends Controller
             ]),
             'statuses' => $this->statuses(),
             'grades' => $this->grades(),
-            'page_title' => 'Ajouter une carte',
+            'page_title' => __('messages.cards.add'),
             'active_menu' => 'cards',
         ]);
     }
@@ -81,7 +81,7 @@ class LicenceHolderController extends Controller
 
         return redirect()
             ->route('admin.cards.show', $licenceHolder)
-            ->with('success', "La carte de {$licenceHolder->full_name} a été créée avec succès.");
+            ->with('success', __('messages.cards.created', ['name' => $licenceHolder->full_name]));
     }
 
     public function show(LicenceHolder $licenceHolder): View
@@ -104,7 +104,7 @@ class LicenceHolderController extends Controller
             'licenceHolder' => $licenceHolder,
             'statuses' => $this->statuses(),
             'grades' => $this->grades(),
-            'page_title' => 'Modifier : ' . $licenceHolder->full_name,
+            'page_title' => __('messages.users.edit_named', ['name' => $licenceHolder->full_name]),
             'active_menu' => 'cards',
         ]);
     }
@@ -133,7 +133,7 @@ class LicenceHolderController extends Controller
 
         return redirect()
             ->route('admin.cards.show', $licenceHolder)
-            ->with('success', "La carte de {$licenceHolder->full_name} a été modifiée avec succès.");
+            ->with('success', __('messages.cards.updated', ['name' => $licenceHolder->full_name]));
     }
 
     public function card(LicenceHolder $licenceHolder): View
@@ -142,7 +142,7 @@ class LicenceHolderController extends Controller
             'licenceHolder' => $licenceHolder,
             'settings' => CardSettings::all(),
             'qrCode' => $this->qrCodeDataUri($licenceHolder),
-            'page_title' => 'Carte : ' . $licenceHolder->full_name,
+            'page_title' => __('messages.cards.title') . ' : ' . $licenceHolder->full_name,
             'active_menu' => 'cards',
         ]);
     }
@@ -155,7 +155,7 @@ class LicenceHolderController extends Controller
             'licenceHolders' => $licenceHolders,
             'settings' => CardSettings::all(),
             'qrCodes' => $this->qrCodesFor($licenceHolders),
-            'page_title' => 'Carte : ' . $licenceHolder->full_name,
+            'page_title' => __('messages.cards.title') . ' : ' . $licenceHolder->full_name,
             'active_menu' => 'cards',
         ]);
     }
@@ -185,7 +185,7 @@ class LicenceHolderController extends Controller
             'licenceHolders' => $licenceHolders,
             'settings' => CardSettings::all(),
             'qrCodes' => $this->qrCodesFor($licenceHolders),
-            'page_title' => 'Planche des cartes',
+            'page_title' => __('messages.cards.sheet_title'),
             'active_menu' => 'cards',
         ]);
     }
@@ -229,7 +229,7 @@ class LicenceHolderController extends Controller
                 ->pluck('salle'),
             'grades' => $this->grades(),
             'nextGrades' => $this->nextGradeMap(),
-            'page_title' => 'Mise à jour des grades',
+            'page_title' => __('messages.cards.grades_update_title'),
             'active_menu' => 'cards',
         ]);
     }

@@ -9,6 +9,7 @@ use App\Services\PermissionService;
 use App\Services\UserService;
 use App\Shared\Enums\UserRole;
 use App\Shared\Enums\UserStatus;
+use App\Models\Permission;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -74,8 +75,8 @@ class UserController extends Controller
         $visibleRoles = collect(UserRole::visibleBy($currentUser))->pluck('value')->all();
         
         // Construire la requête de base en fonction du rôle
-        if ($currentUser->isSuperAdmin()) {
-            // Superadmin: voir tout le monde
+        if ($currentUser->hasFullAccess()) {
+            // Superadmin et président: voir tout le monde
             $query = User::query();
         } else {
             // Chaque rôle ne voit que les rôles placés sous lui dans la hiérarchie
@@ -99,7 +100,7 @@ class UserController extends Controller
             'search' => $search,
             'roles' => collect(UserRole::assignableBy($currentUser))->mapWithKeys(fn($role) => [$role->value => $role->label()])->toArray(),
             'statuses' => collect(UserStatus::cases())->mapWithKeys(fn($status) => [$status->value => $status->label()])->toArray(),
-            'page_title' => 'Utilisateurs',
+            'page_title' => __('messages.users.title'),
             'active_menu' => 'users',
         ]);
     }
@@ -112,7 +113,7 @@ class UserController extends Controller
         return view('admin.users.create', [
             'roles' => collect(UserRole::assignableBy(auth()->user()))->mapWithKeys(fn($role) => [$role->value => $role->label()])->toArray(),
             'statuses' => collect(UserStatus::cases())->mapWithKeys(fn($status) => [$status->value => $status->label()])->toArray(),
-            'page_title' => 'Créer un utilisateur',
+            'page_title' => __('messages.users.create'),
             'active_menu' => 'users',
         ]);
     }
@@ -128,13 +129,13 @@ class UserController extends Controller
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'L\'utilisateur a été créé avec succès.',
+                    'message' => __('messages.users.created'),
                     'user' => $user,
                 ], 201);
             }
 
             return $this->redirectAfterMutation($request)
-                ->with('success', 'L\'utilisateur a été créé avec succès.');
+                ->with('success', __('messages.users.created'));
         } catch (\Illuminate\Validation\ValidationException $e) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json(['success' => false, 'errors' => $e->errors()], 422);
@@ -143,9 +144,9 @@ class UserController extends Controller
         } catch (\Exception $e) {
             \Log::error('UserController@store failed', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             if ($request->wantsJson() || $request->ajax()) {
-                return response()->json(['success' => false, 'message' => 'Erreur lors de la création de l\'utilisateur: ' . $e->getMessage()], 500);
+                return response()->json(['success' => false, 'message' => __('messages.users.create_error', ['message' => $e->getMessage()])], 500);
             }
-            return back()->with('error', 'Erreur lors de la création de l\'utilisateur: ' . $e->getMessage())->withInput();
+            return back()->with('error', __('messages.users.create_error', ['message' => $e->getMessage()]))->withInput();
         }
     }
 
@@ -157,7 +158,7 @@ class UserController extends Controller
         $this->authorizeTarget($user);
         return view('admin.users.show', [
             'user' => $user,
-            'page_title' => 'Détails de ' . $user->name,
+            'page_title' => __('messages.users.details_named', ['name' => $user->name]),
             'active_menu' => 'users',
         ]);
     }
@@ -172,7 +173,7 @@ class UserController extends Controller
             'user' => $user,
             'roles' => collect(UserRole::assignableBy(auth()->user()))->mapWithKeys(fn($role) => [$role->value => $role->label()])->toArray(),
             'statuses' => collect(UserStatus::cases())->mapWithKeys(fn($status) => [$status->value => $status->label()])->toArray(),
-            'page_title' => 'Modifier ' . $user->name,
+            'page_title' => __('messages.users.edit_named', ['name' => $user->name]),
             'active_menu' => 'users',
         ]);
     }
@@ -189,13 +190,13 @@ class UserController extends Controller
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'L\'utilisateur a été modifié avec succès.',
+                    'message' => __('messages.users.updated'),
                     'user' => $user->fresh(),
                 ], 200);
             }
 
             return $this->redirectAfterMutation($request)
-                ->with('success', 'L\'utilisateur a été modifié avec succès.');
+                ->with('success', __('messages.users.updated'));
         } catch (\Illuminate\Validation\ValidationException $e) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json(['success' => false, 'errors' => $e->errors()], 422);
@@ -204,9 +205,9 @@ class UserController extends Controller
         } catch (\Exception $e) {
             \Log::error('UserController@update failed', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             if ($request->wantsJson() || $request->ajax()) {
-                return response()->json(['success' => false, 'message' => 'Erreur lors de la mise à jour de l\'utilisateur: ' . $e->getMessage()], 500);
+                return response()->json(['success' => false, 'message' => __('messages.users.update_error', ['message' => $e->getMessage()])], 500);
             }
-            return back()->with('error', 'Erreur lors de la mise à jour de l\'utilisateur: ' . $e->getMessage())->withInput();
+            return back()->with('error', __('messages.users.update_error', ['message' => $e->getMessage()]))->withInput();
         }
     }
 
@@ -220,17 +221,17 @@ class UserController extends Controller
             $this->userService->delete($user);
 
             if (request()->wantsJson() || request()->ajax()) {
-                return response()->json(['success' => true, 'message' => 'L\'utilisateur a été supprimé avec succès.'], 200);
+                return response()->json(['success' => true, 'message' => __('messages.users.deleted')], 200);
             }
 
             return $this->redirectAfterMutation(request())
-                ->with('success', 'L\'utilisateur a été supprimé avec succès.');
+                ->with('success', __('messages.users.deleted'));
         } catch (\Exception $e) {
             \Log::error('UserController@destroy failed', ['error' => $e->getMessage()]);
             if (request()->wantsJson() || request()->ajax()) {
-                return response()->json(['success' => false, 'message' => 'Erreur lors de la suppression: ' . $e->getMessage()], 500);
+                return response()->json(['success' => false, 'message' => __('messages.users.delete_error', ['message' => $e->getMessage()])], 500);
             }
-            return back()->with('error', 'Erreur lors de la suppression: ' . $e->getMessage());
+            return back()->with('error', __('messages.users.delete_error', ['message' => $e->getMessage()]));
         }
     }
 
@@ -307,6 +308,16 @@ class UserController extends Controller
     {
         $this->authorizeTarget($user);
         $permissionIds = request('permissions', []);
+
+        if (!auth()->user()?->isSuperAdmin() && !empty($permissionIds)) {
+            $containsSchoolPermission = Permission::whereIn('id', $permissionIds)
+                ->whereIn('slug', PermissionService::SCHOOL_PERMISSION_SLUGS)
+                ->exists();
+
+            if ($containsSchoolPermission) {
+                abort(403, 'Accès refusé.');
+            }
+        }
         
         $this->userService->syncPermissions($user, $permissionIds);
 

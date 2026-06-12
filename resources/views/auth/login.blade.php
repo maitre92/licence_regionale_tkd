@@ -1,9 +1,13 @@
+@php
+    $currentLocale = app()->getLocale();
+    $currentDirection = config("app.supported_locales.$currentLocale.dir", 'ltr');
+@endphp
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{{ $currentLocale }}" dir="{{ $currentDirection }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion - Licence Régionale TKD</title>
+    <title>{{ __('messages.auth.login_title') }} - {{ __('messages.app_name') }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -22,6 +26,10 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: var(--login-text);
             overflow: hidden;
+        }
+
+        [dir="rtl"] body {
+            text-align: right;
         }
 
         .split-layout {
@@ -55,6 +63,12 @@
             height: 100%;
             width: 150px;
             z-index: 5;
+        }
+
+        [dir="rtl"] .wave-divider {
+            right: auto;
+            left: -1px;
+            transform: scaleX(-1);
         }
 
         .wave-divider svg {
@@ -138,6 +152,11 @@
             padding-right: 48px;
         }
 
+        [dir="rtl"] .password-field .form-control {
+            padding-right: 14px;
+            padding-left: 48px;
+        }
+
         .password-field .form-control.is-invalid {
             background-position: right 48px center;
             padding-right: 78px;
@@ -157,6 +176,23 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
+        }
+
+        [dir="rtl"] .toggle-password {
+            right: auto;
+            left: 12px;
+        }
+
+        .login-language {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            z-index: 20;
+        }
+
+        [dir="rtl"] .login-language {
+            right: auto;
+            left: 18px;
         }
 
         .toggle-password:hover,
@@ -229,40 +265,57 @@
 
         <!-- Login Side (Right) -->
         <div class="login-side">
+            <div class="dropdown login-language">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" type="button">
+                    <i class="fas fa-language"></i> {{ strtoupper(app()->getLocale()) }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    @foreach(config('app.supported_locales') as $locale => $localeConfig)
+                        <li>
+                            <form method="POST" action="{{ route('language.update', $locale) }}">
+                                @csrf
+                                <button type="submit" class="dropdown-item {{ app()->getLocale() === $locale ? 'active' : '' }}">
+                                    {{ $localeConfig['native'] }}
+                                </button>
+                            </form>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
             <main class="login-container">
                 <div class="card login-card">
                     <div class="login-header">
                         <div class="brand-mark">
                             <i class="fas fa-id-card"></i>
                         </div>
-                        <h1>Licence Régionale TKD</h1>
-                        <p>Connectez-vous à votre espace cartes.</p>
+                        <h1>{{ __('messages.app_name') }}</h1>
+                        <p>{{ __('messages.auth.login_subtitle') }}</p>
                     </div>
 
                     <div class="login-body">
                         @if($errors->any())
                             <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                <i class="fas fa-exclamation-circle"></i> <strong>Connexion impossible</strong>
+                                <i class="fas fa-exclamation-circle"></i> <strong>{{ __('messages.auth.login_failed_title') }}</strong>
                                 <ul class="mb-0 mt-2">
                                     @foreach($errors->all() as $error)
                                         <li>{{ $error }}</li>
                                     @endforeach
                                 </ul>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{ __('messages.cancel') }}"></button>
                             </div>
                         @endif
 
                         @if(session('error'))
                             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                                 <i class="fas fa-times-circle"></i> {{ session('error') }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{ __('messages.cancel') }}"></button>
                             </div>
                         @endif
 
                         @if(session('status'))
                             <div class="alert alert-success alert-dismissible fade show" role="alert">
                                 <i class="fas fa-check-circle"></i> {{ session('status') }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{ __('messages.cancel') }}"></button>
                             </div>
                         @endif
 
@@ -270,7 +323,7 @@
                             @csrf
 
                             <div class="mb-3">
-                                <label for="phone" class="form-label">Numéro de téléphone</label>
+                                <label for="phone" class="form-label">{{ __('messages.auth.phone') }}</label>
                                 <input type="text"
                                        class="form-control @error('phone') is-invalid @enderror"
                                        id="phone"
@@ -284,16 +337,16 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="password" class="form-label">Mot de passe</label>
+                                <label for="password" class="form-label">{{ __('messages.auth.password') }}</label>
                                 <div class="password-field">
                                     <input type="password"
                                            class="form-control @error('password') is-invalid @enderror"
                                            id="password"
                                            name="password"
-                                           placeholder="Votre mot de passe">
+                                           placeholder="{{ __('messages.auth.password_placeholder') }}">
                                     <button type="button"
                                             class="toggle-password"
-                                            aria-label="Afficher le mot de passe"
+                                            aria-label="{{ __('messages.auth.show_password') }}"
                                             aria-pressed="false"
                                             data-password-toggle="password">
                                         <i class="fas fa-eye"></i>
@@ -312,14 +365,14 @@
                                            id="remember"
                                            {{ old('remember') ? 'checked' : '' }}>
                                     <label class="form-check-label" for="remember">
-                                        Se souvenir de moi
+                                        {{ __('messages.auth.remember_me') }}
                                     </label>
                                 </div>
-                                <a class="login-link" href="{{ route('password.request') }}">Mot de passe oublié ?</a>
+                                <a class="login-link" href="{{ route('password.request') }}">{{ __('messages.auth.forgot_password') }}</a>
                             </div>
 
                             <button type="submit" class="btn btn-login">
-                                <i class="fas fa-right-to-bracket"></i> Se connecter
+                                <i class="fas fa-right-to-bracket"></i> {{ __('messages.auth.login') }}
                             </button>
                         </form>
                     </div>
@@ -337,7 +390,7 @@
                 const isHidden = passwordInput.type === 'password';
 
                 passwordInput.type = isHidden ? 'text' : 'password';
-                button.setAttribute('aria-label', isHidden ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
+                button.setAttribute('aria-label', isHidden ? @json(__('messages.auth.hide_password')) : @json(__('messages.auth.show_password')));
                 button.setAttribute('aria-pressed', isHidden ? 'true' : 'false');
                 icon.classList.toggle('fa-eye', !isHidden);
                 icon.classList.toggle('fa-eye-slash', isHidden);

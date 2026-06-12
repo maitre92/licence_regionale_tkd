@@ -25,6 +25,12 @@ class PermissionSeeder extends Seeder
             ['name' => 'Modifier une carte', 'module' => 'Cartes', 'slug' => 'edit_licence_holder', 'action' => 'edit', 'order' => 22],
             ['name' => 'Supprimer une carte', 'module' => 'Cartes', 'slug' => 'delete_licence_holder', 'action' => 'delete', 'order' => 23],
 
+            ['name' => 'Voir les cartes scolaires', 'module' => 'Carte Scolaire', 'slug' => 'view_school_cards', 'action' => 'view', 'order' => 40],
+            ['name' => 'Ajouter une carte scolaire', 'module' => 'Carte Scolaire', 'slug' => 'create_school_card', 'action' => 'create', 'order' => 41],
+            ['name' => 'Modifier une carte scolaire', 'module' => 'Carte Scolaire', 'slug' => 'edit_school_card', 'action' => 'edit', 'order' => 42],
+            ['name' => 'Supprimer une carte scolaire', 'module' => 'Carte Scolaire', 'slug' => 'delete_school_card', 'action' => 'delete', 'order' => 43],
+            ['name' => 'Configurer les cartes scolaires', 'module' => 'Carte Scolaire', 'slug' => 'manage_school_card_settings', 'action' => 'manage', 'order' => 44],
+
             ['name' => 'Gérer les paramètres', 'module' => 'Paramètres', 'slug' => 'manage_settings', 'action' => 'manage', 'order' => 30],
         ];
 

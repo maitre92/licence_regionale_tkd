@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Permission;
 use App\Models\User;
+use App\Services\PermissionService;
 use App\Support\CardSettings;
 use App\Shared\Enums\UserRole;
 use App\Shared\Enums\UserStatus;
@@ -37,10 +38,22 @@ class SettingsController extends Controller
         $currentUser = auth()->user();
         $visibleRoles = collect(UserRole::visibleBy($currentUser))->pluck('value')->all();
 
+        $allowedRoles = [
+            UserRole::PRESIDENT->value,
+            UserRole::VPRESIDENT->value,
+            UserRole::SEGAL->value,
+            UserRole::DTN->value,
+        ];
+
+        if ($currentUser?->isSuperAdmin()) {
+            $allowedRoles[] = UserRole::ADMIN_SCOLAIRE->value;
+        }
+
         $users = User::with('permissions')
-            ->when(!$currentUser?->isSuperAdmin(), function ($query) use ($visibleRoles) {
+            ->when(!$currentUser?->hasFullAccess(), function ($query) use ($visibleRoles) {
                 $query->whereIn('role', $visibleRoles);
             })
+            ->whereIn('role', $allowedRoles)
             ->orderBy('name')
             ->get();
 
@@ -61,6 +74,16 @@ class SettingsController extends Controller
             'manage_settings',
         ];
 
+        if ($currentUser?->isSuperAdmin()) {
+            $visiblePermissionSlugs = array_merge($visiblePermissionSlugs, [
+                'view_school_cards',
+                'create_school_card',
+                'edit_school_card',
+                'delete_school_card',
+                'manage_school_card_settings',
+            ]);
+        }
+
         $allPermissions = Permission::where('is_active', true)
             ->whereIn('slug', $visiblePermissionSlugs)
             ->orderBy('module')
@@ -79,7 +102,7 @@ class SettingsController extends Controller
             'cardSettings' => CardSettings::all(),
             'roles' => collect(UserRole::assignableBy($currentUser))->mapWithKeys(fn($role) => [$role->value => $role->label()])->toArray(),
             'statuses' => collect(UserStatus::cases())->mapWithKeys(fn($status) => [$status->value => $status->label()])->toArray(),
-            'page_title' => 'Paramètres',
+            'page_title' => __('messages.settings'),
             'active_menu' => 'settings',
         ]);
     }
@@ -100,6 +123,7 @@ class SettingsController extends Controller
         ]);
 
         $validated = $this->preparePermissionData($validated);
+        $this->authorizeSchoolPermissionData($validated);
 
         $existingPermission = Permission::withTrashed()
             ->where('name', $validated['name'])
@@ -161,6 +185,8 @@ class SettingsController extends Controller
         ]);
 
         $validated = $this->preparePermissionData($validated, $permission);
+        $this->authorizeSchoolPermission($permission);
+        $this->authorizeSchoolPermissionData($validated);
 
         $permission->update($validated);
 
@@ -173,6 +199,8 @@ class SettingsController extends Controller
      */
     public function destroyPermission(Permission $permission): RedirectResponse
     {
+        $this->authorizeSchoolPermission($permission);
+
         $permission->delete();
 
         return redirect()->route('admin.settings', ['tab' => 'permissions-list'])
@@ -192,6 +220,29 @@ class SettingsController extends Controller
         return $data;
     }
 
+    private function authorizeSchoolPermission(Permission $permission): void
+    {
+        if (
+            in_array($permission->slug, PermissionService::SCHOOL_PERMISSION_SLUGS, true)
+            && !auth()->user()?->isSuperAdmin()
+        ) {
+            abort(403, 'Accès refusé.');
+        }
+    }
+
+    private function authorizeSchoolPermissionData(array $data): void
+    {
+        $module = Str::lower((string) ($data['module'] ?? ''));
+        $slug = (string) ($data['slug'] ?? '');
+
+        if (
+            !auth()->user()?->isSuperAdmin()
+            && (in_array($slug, PermissionService::SCHOOL_PERMISSION_SLUGS, true) || str_contains($module, 'scolaire'))
+        ) {
+            abort(403, 'Accès refusé.');
+        }
+    }
+
     /**
      * Assigner des permissions à un utilisateur
      */
@@ -207,17 +258,27 @@ class SettingsController extends Controller
         $currentRole = UserRole::tryFrom(auth()->user()?->role ?? '');
         $targetRole = UserRole::tryFrom($user->role);
 
-        if (!$currentRole || !$targetRole || ($currentRole !== UserRole::SUPERADMIN && !$currentRole->canManage($targetRole))) {
+        if (!$currentRole || !$targetRole || (!$currentRole->canManage($targetRole) && $currentRole !== UserRole::SUPERADMIN && $currentRole !== UserRole::PRESIDENT)) {
             abort(403, 'Accès refusé.');
         }
 
         $permissions = $validated['permissions'] ?? [];
 
+        if (!auth()->user()?->isSuperAdmin() && !empty($permissions)) {
+            $containsSchoolPermission = Permission::whereIn('id', $permissions)
+                ->whereIn('slug', PermissionService::SCHOOL_PERMISSION_SLUGS)
+                ->exists();
+
+            if ($containsSchoolPermission) {
+                abort(403, 'Accès refusé.');
+            }
+        }
+
         // Sync des permissions utilisateur
         $user->permissions()->sync($permissions);
 
         return redirect()->route('admin.settings', ['tab' => 'permissions-assign'])
-            ->with('success', 'Permissions de l\'utilisateur mises à jour avec succès');
+            ->with('success', __('messages.settings_page.permissions_updated'));
     }
 
     /**
@@ -305,7 +366,7 @@ class SettingsController extends Controller
         CardSettings::save($settings);
 
         return redirect()->route('admin.settings', ['tab' => $section])
-            ->with('success', 'Paramètres mis à jour avec succès');
+            ->with('success', __('messages.settings_page.updated'));
     }
 
     private function storeSignatureData(string $dataUri): string

@@ -27,6 +27,7 @@ class User extends Authenticatable
         'avatar',
         'role',
         'status',
+        'locale',
         'is_active',
     ];
 
@@ -70,9 +71,19 @@ class User extends Authenticatable
         return $roleValue === UserRole::SUPERADMIN->value;
     }
 
+    public function hasFullAccess(): bool
+    {
+        if (!$this->role) {
+            return false;
+        }
+
+        $roleValue = $this->role instanceof UserRole ? $this->role->value : (string) $this->role;
+        return in_array($roleValue, [UserRole::SUPERADMIN->value, UserRole::PRESIDENT->value], true);
+    }
+
     public function isAdmin(): bool
     {
-        if ($this->isSuperAdmin()) {
+        if ($this->hasFullAccess()) {
             return true;
         }
 

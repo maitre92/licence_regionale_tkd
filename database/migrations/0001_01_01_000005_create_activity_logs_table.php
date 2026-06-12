@@ -11,24 +11,26 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('activity_logs', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->string('action'); // e.g., 'login', 'logout', 'create_user', 'edit_permission'
-            $table->string('subject'); // e.g., 'User', 'Permission'
-            $table->unsignedBigInteger('subject_id')->nullable();
-            $table->text('description')->nullable();
-            $table->string('ip_address')->nullable();
-            $table->text('user_agent')->nullable();
-            $table->json('changes')->nullable(); // Pour tracker les modifications
-            $table->string('status')->default('success'); // success, warning, error
-            $table->timestamps();
+        if (!Schema::hasTable('activity_logs')) {
+            Schema::create('activity_logs', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
+                $table->string('action'); // e.g., 'login', 'logout', 'create_user', 'edit_permission'
+                $table->string('subject'); // e.g., 'User', 'Permission'
+                $table->unsignedBigInteger('subject_id')->nullable();
+                $table->text('description')->nullable();
+                $table->string('ip_address')->nullable();
+                $table->text('user_agent')->nullable();
+                $table->json('changes')->nullable(); // Pour tracker les modifications
+                $table->string('status')->default('success'); // success, warning, error
+                $table->timestamps();
 
-            $table->index('user_id');
-            $table->index('action');
-            $table->index('subject');
-            $table->index('created_at');
-        });
+                $table->index('user_id');
+                $table->index('action');
+                $table->index('subject');
+                $table->index('created_at');
+            });
+        }
     }
 
     /**

@@ -11,6 +11,14 @@ use Illuminate\Database\Eloquent\Collection;
  */
 class PermissionService
 {
+    public const SCHOOL_PERMISSION_SLUGS = [
+        'view_school_cards',
+        'create_school_card',
+        'edit_school_card',
+        'delete_school_card',
+        'manage_school_card_settings',
+    ];
+
     /**
      * Créer une nouvelle permission
      */
@@ -169,6 +177,16 @@ class PermissionService
         $grouped = $this->groupedByModule();
 
         foreach ($grouped as $module => $permissions) {
+            if (!auth()->user()?->isSuperAdmin()) {
+                $permissions = $permissions->reject(
+                    fn (Permission $permission) => in_array($permission->slug, self::SCHOOL_PERMISSION_SLUGS, true)
+                );
+            }
+
+            if ($permissions->isEmpty()) {
+                continue;
+            }
+
             $modules[$module] = [
                 'permissions' => $permissions->keyBy('action'),
                 'count' => $permissions->count(),

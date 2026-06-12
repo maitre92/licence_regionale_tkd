@@ -14,6 +14,14 @@ use Database\Seeders\PermissionSeeder;
 
 class AppServiceProvider extends ServiceProvider
 {
+    private const SCHOOL_PERMISSION_SLUGS = [
+        'view_school_cards',
+        'create_school_card',
+        'edit_school_card',
+        'delete_school_card',
+        'manage_school_card_settings',
+    ];
+
     /**
      * Register any application services.
      */
@@ -29,7 +37,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Enregistrer les gates dynamiquement pour les permissions
         Gate::define('manage-settings', function (User $user) {
-            return $user->isSuperAdmin() || $user->hasPermission('manage_settings');
+            return $user->hasFullAccess() || $user->hasPermission('manage_settings');
         });
 
         $this->ensureDefaultPermissions();
@@ -39,7 +47,11 @@ class AppServiceProvider extends ServiceProvider
             $permissionSlugs = Permission::where('is_active', true)->pluck('slug')->toArray();
             foreach ($permissionSlugs as $permission) {
                 Gate::define($permission, function (User $user) use ($permission) {
-                    return $user->isSuperAdmin() || $user->hasPermission($permission);
+                    if (in_array($permission, self::SCHOOL_PERMISSION_SLUGS, true)) {
+                        return $user->isSuperAdmin() || $user->hasPermission($permission);
+                    }
+
+                    return $user->hasFullAccess() || $user->hasPermission($permission);
                 });
             }
         }
@@ -56,6 +68,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         $permissionSlugs = Permission::where('is_active', true)->pluck('slug')->toArray();
+        $defaultAdminPermissionSlugs = array_values(array_diff($permissionSlugs, self::SCHOOL_PERMISSION_SLUGS));
         if (empty($permissionSlugs)) {
             return;
         }
@@ -105,10 +118,35 @@ class AppServiceProvider extends ServiceProvider
             }
         }
 
-        User::where('role', UserRole::ADMIN->value)
+        User::whereIn('role', [UserRole::ADMIN->value, UserRole::PRESIDENT->value])
             ->get()
-            ->each(function (User $admin) use ($permissionSlugs) {
-                $admin->grantPermissions($permissionSlugs, 'Initialisation automatique des permissions pour admin');
+            ->each(function (User $admin) use ($defaultAdminPermissionSlugs) {
+                $admin->grantPermissions($defaultAdminPermissionSlugs, 'Initialisation automatique des permissions pour admin/president');
+            });
+
+        $this->removeAutomaticallyGrantedSchoolPermissions();
+    }
+
+    private function removeAutomaticallyGrantedSchoolPermissions(): void
+    {
+        $schoolPermissionIds = Permission::whereIn('slug', self::SCHOOL_PERMISSION_SLUGS)->pluck('id');
+
+        if ($schoolPermissionIds->isEmpty()) {
+            return;
+        }
+
+        User::whereIn('role', [UserRole::ADMIN->value, UserRole::PRESIDENT->value])
+            ->get()
+            ->each(function (User $admin) use ($schoolPermissionIds) {
+                $autoGrantedIds = $admin->permissions()
+                    ->whereIn('permissions.id', $schoolPermissionIds)
+                    ->wherePivot('reason', 'Initialisation automatique des permissions pour admin/president')
+                    ->pluck('permissions.id')
+                    ->all();
+
+                if (!empty($autoGrantedIds)) {
+                    $admin->permissions()->detach($autoGrantedIds);
+                }
             });
     }
 

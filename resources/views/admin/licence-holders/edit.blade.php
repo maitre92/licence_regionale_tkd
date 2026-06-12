@@ -1,10 +1,10 @@
 @extends('layouts.admin')
 
-@section('title', 'Modifier une carte')
+@section('title', __('messages.cards.save_changes'))
 
 @section('actions')
     <a href="{{ route('admin.cards.show', $licenceHolder) }}" class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left"></i> Retour à la fiche
+        <i class="fas fa-arrow-left"></i> {{ __('messages.cards.back_to_details') }}
     </a>
 @endsection
 

@@ -25,7 +25,7 @@ class DashboardController extends Controller
         $recentCards = LicenceHolder::latest()->take(8)->get();
 
         return view('admin.dashboard.index', array_merge($stats, [
-            'page_title' => 'Tableau de bord',
+            'page_title' => __('messages.dashboard'),
             'recentCards' => $recentCards,
         ]));
     }

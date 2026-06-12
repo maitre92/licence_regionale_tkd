@@ -1,10 +1,10 @@
 @extends('layouts.admin')
 
-@section('title', 'Modifier utilisateur')
+@section('title', __('messages.users.edit'))
 
 @section('actions')
     <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left"></i> Retour
+        <i class="fas fa-arrow-left"></i> {{ __('messages.back') }}
     </a>
 @endsection
 
@@ -13,7 +13,7 @@
     <div class="col-lg-8 mx-auto">
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white">
-                <h5 class="mb-0">Modifier : {{ $user->name }}</h5>
+                <h5 class="mb-0">{{ __('messages.users.edit_named', ['name' => $user->name]) }}</h5>
             </div>
             <div class="card-body">
                 <form action="{{ route('admin.users.update', $user) }}" method="POST">

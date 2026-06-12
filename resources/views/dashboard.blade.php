@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Tableau de bord')
+@section('title', __('messages.dashboard'))
 
 @section('content')
 @if(session('success'))

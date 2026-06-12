@@ -303,11 +303,21 @@ class UserService
 
     private function grantDefaultAdminPermissions(User $user): void
     {
-        if ($user->role !== UserRole::ADMIN->value) {
+        if (in_array($user->role, [UserRole::ADMIN->value, UserRole::PRESIDENT->value], true)) {
+            $permissionIds = Permission::where('is_active', true)
+                ->whereNotIn('slug', [
+                    'view_school_cards',
+                    'create_school_card',
+                    'edit_school_card',
+                    'delete_school_card',
+                    'manage_school_card_settings',
+                ])
+                ->pluck('id')
+                ->all();
+        } else {
             return;
         }
-
-        $permissionIds = Permission::where('is_active', true)->pluck('id')->all();
+        
         if (empty($permissionIds)) {
             return;
         }

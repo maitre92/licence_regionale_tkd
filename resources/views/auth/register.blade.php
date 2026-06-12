@@ -150,17 +150,16 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="email" class="form-label">Adresse Email</label>
+                        <label for="phone" class="form-label">Téléphone</label>
                         <input 
-                            type="email" 
-                            class="form-control @error('email') is-invalid @enderror" 
-                            id="email" 
-                            name="email" 
-                            value="{{ old('email') }}"
-                            placeholder="nom@exemple.com"
-                            required
+                            type="text" 
+                            class="form-control @error('phone') is-invalid @enderror" 
+                            id="phone" 
+                            name="phone" 
+                            value="{{ old('phone') }}"
+                            placeholder="06 12 34 56 78"
                         >
-                        @error('email')
+                        @error('phone')
                             <span class="error-message">{{ $message }}</span>
                         @enderror
                     </div>

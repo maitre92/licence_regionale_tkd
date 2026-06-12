@@ -1,7 +1,7 @@
 <footer class="text-center py-3 border-top" style="font-size: 13px;">
     <div class="container-fluid">
         <p class="text-muted mb-1">
-            &copy; {{ date('Y') }} {{ config('app.name') }}. Tous droits réservés.
+            &copy; {{ date('Y') }} {{ __('messages.app_name') }}.
         </p>
         <small class="text-muted">
             <a href="#" class="text-decoration-none">Conditions</a> | 

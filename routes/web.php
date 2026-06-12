@@ -4,7 +4,9 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\LicenceHolderController;
+use App\Http\Controllers\Admin\SchoolCardController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\LocaleController;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -16,6 +18,8 @@ Route::get('/', function () {
     }
     return redirect()->route('login');
 });
+
+Route::post('/language/{locale}', [LocaleController::class, 'update'])->name('language.update');
 
 /**
  * Routes d'authentification (sans protection)
@@ -75,6 +79,16 @@ Route::middleware('auth')->group(function () {
         Route::resource('cartes', LicenceHolderController::class)
             ->names('cards')
             ->parameters(['cartes' => 'licenceHolder']);
+
+        // Gestion des cartes scolaires
+        Route::get('cartes-scolaires/parametres', [SchoolCardController::class, 'settings'])->name('school-cards.settings');
+        Route::put('cartes-scolaires/parametres', [SchoolCardController::class, 'updateSettings'])->name('school-cards.settings.update');
+        Route::get('cartes-scolaires/{schoolCard}/generer', [SchoolCardController::class, 'card'])->name('school-cards.card');
+        Route::get('cartes-scolaires/{schoolCard}/telecharger', [SchoolCardController::class, 'download'])->name('school-cards.download');
+        Route::get('cartes-scolaires/{schoolCard}/imprimer', [SchoolCardController::class, 'print'])->name('school-cards.print');
+        Route::resource('cartes-scolaires', SchoolCardController::class)
+            ->names('school-cards')
+            ->parameters(['cartes-scolaires' => 'schoolCard']);
 
         // Paramètres
         Route::get('/settings', [SettingsController::class, 'index'])->name('settings');

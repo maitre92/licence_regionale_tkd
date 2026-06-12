@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Mon profil')
+@section('title', __('messages.profile'))
 
 @section('layout_content')
 @php
@@ -82,7 +82,7 @@
         <div class="card-body">
             @if($errors->any())
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="fas fa-exclamation-circle"></i> <strong>Erreur!</strong>
+                    <i class="fas fa-exclamation-circle"></i> <strong>{{ __('messages.error') }}!</strong>
                     <ul class="mb-0 mt-2">
                         @foreach($errors->all() as $error)
                             <li>{{ $error }}</li>
@@ -116,7 +116,7 @@
                             role="tab"
                             aria-controls="info-panel"
                             aria-selected="{{ $activeTab === 'info' ? 'true' : 'false' }}">
-                        <i class="fas fa-id-card"></i> Infos personnelles
+                        <i class="fas fa-id-card"></i> {{ __('messages.auth.personal_info') }}
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
@@ -128,7 +128,7 @@
                             role="tab"
                             aria-controls="password-panel"
                             aria-selected="{{ $activeTab === 'password' ? 'true' : 'false' }}">
-                        <i class="fas fa-key"></i> Changer mot de passe
+                        <i class="fas fa-key"></i> {{ __('messages.auth.change_password') }}
                     </button>
                 </li>
             </ul>
@@ -143,7 +143,7 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="name" class="form-label">
-                                    <i class="fas fa-user"></i> Nom
+                                    <i class="fas fa-user"></i> {{ __('messages.name') }}
                                 </label>
                                 <input type="text"
                                        class="form-control @error('name') is-invalid @enderror"
@@ -158,7 +158,7 @@
 
                             <div class="col-md-6">
                                 <label for="email" class="form-label">
-                                    <i class="fas fa-envelope"></i> Email
+                                    <i class="fas fa-envelope"></i> {{ __('messages.email') }}
                                 </label>
                                 <input type="email"
                                        class="form-control @error('email') is-invalid @enderror"
@@ -173,7 +173,7 @@
 
                             <div class="col-md-6">
                                 <label for="phone" class="form-label">
-                                    <i class="fas fa-phone"></i> Téléphone
+                                    <i class="fas fa-phone"></i> {{ __('messages.phone') }}
                                 </label>
                                 <input type="text"
                                        class="form-control @error('phone') is-invalid @enderror"
@@ -187,7 +187,7 @@
 
                             <div class="col-md-6">
                                 <label for="avatar" class="form-label">
-                                    <i class="fas fa-camera"></i> Photo de profil
+                                    <i class="fas fa-camera"></i> {{ __('messages.auth.profile_photo') }}
                                 </label>
                                 <input type="file"
                                        class="form-control @error('avatar') is-invalid @enderror"
@@ -202,10 +202,10 @@
 
                         <div class="d-flex justify-content-end gap-2 mt-4">
                             <a href="{{ route('dashboard') }}" class="btn btn-secondary">
-                                <i class="fas fa-times"></i> Annuler
+                                <i class="fas fa-times"></i> {{ __('messages.cancel') }}
                             </a>
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Enregistrer
+                                <i class="fas fa-save"></i> {{ __('messages.save') }}
                             </button>
                         </div>
                     </form>
@@ -219,7 +219,7 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="old_password" class="form-label">
-                                    <i class="fas fa-lock"></i> Ancien mot de passe
+                                    <i class="fas fa-lock"></i> {{ __('messages.auth.old_password') }}
                                 </label>
                                 <input type="password"
                                        class="form-control @error('old_password') is-invalid @enderror"
@@ -233,7 +233,7 @@
 
                             <div class="col-md-6">
                                 <label for="new_password" class="form-label">
-                                    <i class="fas fa-lock"></i> Nouveau mot de passe
+                                    <i class="fas fa-lock"></i> {{ __('messages.auth.new_password') }}
                                 </label>
                                 <input type="password"
                                        class="form-control @error('new_password') is-invalid @enderror"
@@ -247,7 +247,7 @@
 
                             <div class="col-md-6">
                                 <label for="new_password_confirmation" class="form-label">
-                                    <i class="fas fa-lock"></i> Confirmer le nouveau mot de passe
+                                    <i class="fas fa-lock"></i> {{ __('messages.auth.confirm_new_password') }}
                                 </label>
                                 <input type="password"
                                        class="form-control"
@@ -259,10 +259,10 @@
 
                         <div class="d-flex justify-content-end gap-2 mt-4">
                             <a href="{{ route('dashboard') }}" class="btn btn-secondary">
-                                <i class="fas fa-times"></i> Annuler
+                                <i class="fas fa-times"></i> {{ __('messages.cancel') }}
                             </a>
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Changer le mot de passe
+                                <i class="fas fa-save"></i> {{ __('messages.auth.change_password') }}
                             </button>
                         </div>
                     </form>

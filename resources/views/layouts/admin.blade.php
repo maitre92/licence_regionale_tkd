@@ -16,7 +16,7 @@
                     @yield('breadcrumbs')
                 @else
                     <li class="breadcrumb-item">
-                        <a href="{{ route('admin.dashboard') }}">Tableau de bord</a>
+                        <a href="{{ route('admin.dashboard') }}">{{ __('messages.dashboard') }}</a>
                     </li>
                     <li class="breadcrumb-item active" aria-current="page">{{ $currentPageTitle }}</li>
                 @endif
@@ -37,7 +37,7 @@
 <!-- Alerts -->
 @if ($errors->any())
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="fas fa-exclamation-circle"></i> <strong>Erreurs:</strong>
+        <i class="fas fa-exclamation-circle"></i> <strong>{{ __('messages.errors') }}:</strong>
         <ul class="mb-0 mt-2">
             @foreach ($errors->all() as $error)
                 <li>{{ $error }}</li>
@@ -107,7 +107,7 @@ document.addEventListener('submit', function(e) {
         if ((res.status === 200 || res.status === 201) && contentType.includes('application/json')) {
             const json = await res.json();
             // success: show flash and reload
-            showGlobalAlert('success', json.message || 'Opération réussie');
+            showGlobalAlert('success', json.message || @json(__('messages.operation_success')));
             setTimeout(() => location.reload(), 800);
             return;
         }
@@ -120,14 +120,14 @@ document.addEventListener('submit', function(e) {
         try { 
             const j = await res.json(); 
             if (j.success === false) { 
-                showFormErrors(form, {'erreur_serveur': [j.message || 'Erreur du serveur']}); 
+                showFormErrors(form, {'erreur_serveur': [j.message || @json(__('messages.server_error'))]}); 
             } 
         } catch (err) { 
-            showFormErrors(form, {'erreur_inattendue': ['Une erreur inattendue s\'est produite.']}); 
+            showFormErrors(form, {'erreur_inattendue': [@json(__('messages.unexpected_error'))]}); 
         }
     }).catch(err => {
         if (err.message !== 'validation') {
-            showFormErrors(form, {'erreur_connexion': ['Erreur de connexion au serveur.']});
+            showFormErrors(form, {'erreur_connexion': [@json(__('messages.connection_error'))]});
         }
     }).finally(() => {
         if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = originalText; }

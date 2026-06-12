@@ -62,6 +62,8 @@ class PermissionController extends Controller
      */
     public function edit(Permission $permission): View
     {
+        $this->authorizeSchoolPermission($permission);
+
         return view('admin.permissions.edit', [
             'permission' => $permission,
             'page_title' => 'Modifier ' . $permission->name,
@@ -74,6 +76,8 @@ class PermissionController extends Controller
      */
     public function update(PermissionRequest $request, Permission $permission): RedirectResponse
     {
+        $this->authorizeSchoolPermission($permission);
+
         $this->permissionService->update($permission, $request->validated());
 
         return redirect()->route('admin.permissions.index')
@@ -85,6 +89,8 @@ class PermissionController extends Controller
      */
     public function destroy(Permission $permission): RedirectResponse
     {
+        $this->authorizeSchoolPermission($permission);
+
         $this->permissionService->delete($permission);
 
         return redirect()->route('admin.permissions.index')
@@ -99,5 +105,15 @@ class PermissionController extends Controller
         $this->permissionService->createDefaultPermissions();
 
         return back()->with('success', 'Les permissions par défaut ont été créées.');
+    }
+
+    private function authorizeSchoolPermission(Permission $permission): void
+    {
+        if (
+            in_array($permission->slug, PermissionService::SCHOOL_PERMISSION_SLUGS, true)
+            && !auth()->user()?->isSuperAdmin()
+        ) {
+            abort(403, 'Accès refusé.');
+        }
     }
 }

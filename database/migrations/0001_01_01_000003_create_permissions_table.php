@@ -11,22 +11,24 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('permissions', function (Blueprint $table) {
-            $table->id();
-            $table->string('name')->unique();
-            $table->string('slug')->unique();
-            $table->text('description')->nullable();
-            $table->string('module')->nullable(); // e.g., 'users', 'cards', 'settings'
-            $table->string('action')->nullable(); // e.g., 'view', 'create', 'edit', 'delete'
-            $table->integer('order')->default(0);
-            $table->boolean('is_active')->default(true);
-            $table->softDeletes();
-            $table->timestamps();
+        if (!Schema::hasTable('permissions')) {
+            Schema::create('permissions', function (Blueprint $table) {
+                $table->id();
+                $table->string('name')->unique();
+                $table->string('slug')->unique();
+                $table->text('description')->nullable();
+                $table->string('module')->nullable(); // e.g., 'users', 'cards', 'settings'
+                $table->string('action')->nullable(); // e.g., 'view', 'create', 'edit', 'delete'
+                $table->integer('order')->default(0);
+                $table->boolean('is_active')->default(true);
+                $table->softDeletes();
+                $table->timestamps();
 
-            $table->index('module');
-            $table->index('action');
-            $table->index('is_active');
-        });
+                $table->index('module');
+                $table->index('action');
+                $table->index('is_active');
+            });
+        }
     }
 
     /**

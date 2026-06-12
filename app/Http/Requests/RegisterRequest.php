@@ -23,7 +23,7 @@ class RegisterRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users',
+            'email' => 'nullable|email|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'phone' => 'nullable|string|max:20',
         ];
@@ -33,7 +33,6 @@ class RegisterRequest extends FormRequest
     {
         return [
             'name.required' => 'Le nom est obligatoire.',
-            'email.required' => 'L\'adresse email est obligatoire.',
             'email.email' => 'L\'adresse email doit être valide.',
             'email.unique' => 'Cette adresse email est déjà utilisée.',
             'password.required' => 'Le mot de passe est obligatoire.',

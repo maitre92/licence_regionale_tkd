@@ -2,8 +2,7 @@
     <div class="container-fluid">
         <a class="navbar-brand" href="{{ route('admin.dashboard') }}">
             <i class="fas fa-id-card"></i>
-            <span style="color: var(--navbar-text); font-weight: 700;">Licence Régionale</span>
-            <span style="color: #d4af37; font-weight: 700;">TKD</span>
+            <span style="color: var(--navbar-text); font-weight: 700;">{{ __('messages.app_name') }}</span>
         </a>
         
         <button class="navbar-toggler" type="button" id="sidebarToggle">
@@ -14,8 +13,8 @@
             <ul class="navbar-nav ms-auto">
                 <!-- Theme Color Selector -->
                 <li class="nav-item dropdown me-2">
-                    <button class="btn btn-sm btn-theme-toggle dropdown-toggle" id="themeSelector" data-bs-toggle="dropdown" title="Changer le thème">
-                        <i class="fas fa-palette"></i> Thème
+                    <button class="btn btn-sm btn-theme-toggle dropdown-toggle" id="themeSelector" data-bs-toggle="dropdown" title="{{ __('messages.change_theme') }}">
+                        <i class="fas fa-palette"></i> {{ __('messages.theme') }}
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="themeSelector">
                         <li><a class="dropdown-item" href="#" data-theme="default" onclick="setTheme('default'); return false;">
@@ -39,9 +38,28 @@
                     </ul>
                 </li>
 
+                <li class="nav-item dropdown me-2">
+                    <button class="btn btn-sm btn-theme-toggle dropdown-toggle" id="languageSelector" data-bs-toggle="dropdown" title="{{ __('messages.language') }}">
+                        <i class="fas fa-language"></i> {{ strtoupper(app()->getLocale()) }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageSelector">
+                        @foreach(config('app.supported_locales') as $locale => $localeConfig)
+                            <li>
+                                <form method="POST" action="{{ route('language.update', $locale) }}">
+                                    @csrf
+                                    <button type="submit" class="dropdown-item {{ app()->getLocale() === $locale ? 'active' : '' }}">
+                                        <i class="fas fa-check {{ app()->getLocale() === $locale ? '' : 'invisible' }}"></i>
+                                        {{ $localeConfig['native'] }}
+                                    </button>
+                                </form>
+                            </li>
+                        @endforeach
+                    </ul>
+                </li>
+
                 <!-- Dark Mode Toggle -->
                 <li class="nav-item">
-                    <button class="btn btn-outline-light btn-sm me-2" id="darkModeToggle" title="Mode sombre">
+                    <button class="btn btn-outline-light btn-sm me-2" id="darkModeToggle" title="{{ __('messages.dark_mode') }}">
                         <i class="fas fa-moon"></i>
                     </button>
                 </li>
@@ -53,12 +71,12 @@
                         @else
                             <i class="fas fa-user-circle fs-5"></i>
                         @endif
-                        <span>{{ Auth::user()->name ?? 'Guest' }}</span>
+                        <span>{{ Auth::user()->name ?? __('messages.guest') }}</span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                         <li>
                             <a class="dropdown-item" href="{{ route('profile.edit') }}">
-                                <i class="fas fa-user"></i> Mon Profil
+                                <i class="fas fa-user"></i> {{ __('messages.profile') }}
                             </a>
                         </li>
                         <li><hr class="dropdown-divider"></li>
@@ -66,7 +84,7 @@
                             <form action="{{ route('logout') }}" method="POST" style="display: inline; width: 100%;">
                                 @csrf
                                 <button type="submit" class="dropdown-item">
-                                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                                    <i class="fas fa-sign-out-alt"></i> {{ __('messages.logout') }}
                                 </button>
                             </form>
                         </li>
@@ -170,6 +188,7 @@
         }
 
         #themeSelector,
+        #languageSelector,
         #darkModeToggle {
             display: inline-flex;
             align-items: center;
@@ -180,11 +199,13 @@
             padding: 0;
         }
 
-        #themeSelector {
+        #themeSelector,
+        #languageSelector {
             font-size: 0;
         }
 
-        #themeSelector i {
+        #themeSelector i,
+        #languageSelector i {
             font-size: 14px;
         }
 

@@ -25,9 +25,10 @@ class UserRequest extends FormRequest
         $rules = [
             'name' => ['required', 'string', 'max:255'],
             'email' => [
-                'required',
+                'nullable',
                 'email',
-                Rule::unique('users')->ignore($userId)
+                'max:255',
+                Rule::unique('users')->ignore($userId),
             ],
             'phone' => [
                 'nullable',
@@ -54,7 +55,6 @@ class UserRequest extends FormRequest
     {
         return [
             'name.required' => 'Le nom est obligatoire.',
-            'email.required' => 'L\'email est obligatoire.',
             'email.email' => 'Veuillez entrer une adresse email valide.',
             'email.unique' => 'Cet email est déjà utilisé.',
             'phone.unique' => 'Ce numéro de téléphone est déjà utilisé.',

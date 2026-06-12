@@ -11,21 +11,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('user_permissions', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->foreignId('permission_id')->constrained('permissions')->cascadeOnDelete();
-            $table->timestamp('granted_at')->useCurrent();
-            $table->foreignId('granted_by')->nullable()->constrained('users');
-            $table->text('reason')->nullable();
-            $table->timestamps();
+        if (!Schema::hasTable('user_permissions')) {
+            Schema::create('user_permissions', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+                $table->foreignId('permission_id')->constrained('permissions')->cascadeOnDelete();
+                $table->timestamp('granted_at')->useCurrent();
+                $table->foreignId('granted_by')->nullable()->constrained('users');
+                $table->text('reason')->nullable();
+                $table->timestamps();
 
-            // Éviter les doublons
-            $table->unique(['user_id', 'permission_id']);
-            
-            $table->index('user_id');
-            $table->index('permission_id');
-        });
+                // Éviter les doublons
+                $table->unique(['user_id', 'permission_id']);
+                
+                $table->index('user_id');
+                $table->index('permission_id');
+            });
+        }
     }
 
     /**

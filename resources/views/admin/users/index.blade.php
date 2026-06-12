@@ -1,11 +1,11 @@
 @extends('layouts.admin')
 
-@section('title', 'Utilisateurs')
+@section('title', __('messages.users.title'))
 
 @section('actions')
     @if(Auth::user()->isSuperAdmin() || Auth::user()->hasPermission('create_user'))
         <a href="{{ route('admin.users.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Ajouter un utilisateur
+            <i class="fas fa-plus"></i> {{ __('messages.users.add') }}
         </a>
     @endif
 @endsection
@@ -15,11 +15,11 @@
     <div class="card-header bg-white">
         <form method="GET" action="{{ route('admin.users.index') }}" class="row g-2 align-items-center">
             <div class="col-md-10">
-                <input type="text" name="search" class="form-control form-control-sm" placeholder="Rechercher par nom, email ou téléphone..." value="{{ request('search') }}">
+                <input type="text" name="search" class="form-control form-control-sm" placeholder="{{ __('messages.users.search_placeholder') }}" value="{{ request('search') }}">
             </div>
             <div class="col-md-2">
                 <button type="submit" class="btn btn-sm btn-outline-secondary w-100">
-                    <i class="fas fa-search"></i> Rechercher
+                    <i class="fas fa-search"></i> {{ __('messages.search') }}
                 </button>
             </div>
         </form>
@@ -29,12 +29,12 @@
         <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
                 <tr>
-                    <th>Nom</th>
-                    <th>Email</th>
-                    <th>Téléphone</th>
-                    <th>Rôle</th>
-                    <th>Statut</th>
-                    <th style="width: 120px;" class="text-end">Actions</th>
+                    <th>{{ __('messages.name') }}</th>
+                    <th>{{ __('messages.email') }}</th>
+                    <th>{{ __('messages.phone') }}</th>
+                    <th>{{ __('messages.role') }}</th>
+                    <th>{{ __('messages.status') }}</th>
+                    <th style="width: 120px;" class="text-end">{{ __('messages.actions') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -47,19 +47,19 @@
                         <td>{{ \App\Shared\Enums\UserStatus::tryFrom($user->status)?->label() ?? $user->status }}</td>
                         <td class="text-end">
                             <div class="btn-group btn-group-sm">
-                                <a href="{{ route('admin.users.show', $user) }}" class="btn btn-outline-secondary" title="Voir">
+                                <a href="{{ route('admin.users.show', $user) }}" class="btn btn-outline-secondary" title="{{ __('messages.view') }}">
                                     <i class="fas fa-eye"></i>
                                 </a>
                                 @if(Auth::user()->isSuperAdmin() || Auth::user()->hasPermission('edit_user'))
-                                    <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-outline-primary" title="Modifier">
+                                    <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-outline-primary" title="{{ __('messages.edit') }}">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                 @endif
                                 @if(Auth::user()->isSuperAdmin() || Auth::user()->hasPermission('delete_user'))
-                                    <form action="{{ route('admin.users.destroy', $user) }}" method="POST" onsubmit="return confirm('Supprimer cet utilisateur ?')">
+                                    <form action="{{ route('admin.users.destroy', $user) }}" method="POST" onsubmit="return confirm(@json(__('messages.users.delete_confirm')))">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-outline-danger" title="Supprimer">
+                                        <button type="submit" class="btn btn-outline-danger" title="{{ __('messages.delete') }}">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
@@ -69,7 +69,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="text-center py-4 text-muted">Aucun utilisateur trouvé</td>
+                        <td colspan="6" class="text-center py-4 text-muted">{{ __('messages.users.none_found') }}</td>
                     </tr>
                 @endforelse
             </tbody>

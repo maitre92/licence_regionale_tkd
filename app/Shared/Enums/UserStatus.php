@@ -15,13 +15,7 @@ enum UserStatus: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::ACTIVE => 'Actif',
-            self::INACTIVE => 'Inactif',
-            self::PENDING => 'En attente',
-            self::SUSPENDED => 'Suspendu',
-            self::BANNED => 'Banni',
-        };
+        return __("messages.statuses.{$this->value}");
     }
 
     public function color(): string

@@ -1,9 +1,13 @@
+@php
+    $currentLocale = $currentLocale ?? app()->getLocale();
+    $currentDirection = $currentDirection ?? config("app.supported_locales.$currentLocale.dir", 'ltr');
+@endphp
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{{ $currentLocale }}" dir="{{ $currentDirection }}" data-locale="{{ $currentLocale }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Dashboard') - Licence Régionale TKD</title>
+    <title>@yield('title', __('messages.dashboard')) - {{ __('messages.app_name') }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -103,6 +107,10 @@
             flex-direction: column;
         }
 
+        [dir="rtl"] body {
+            text-align: right;
+        }
+
         html.dark-mode body {
             background-color: var(--main-bg);
             color: var(--body-text);
@@ -124,6 +132,11 @@
 
         .navbar-brand i {
             margin-right: 8px;
+        }
+
+        [dir="rtl"] .navbar-brand i {
+            margin-right: 0;
+            margin-left: 8px;
         }
 
         /* Navbar dropdown styling: unified and with strong hover contrast */
@@ -170,9 +183,19 @@
             min-width: 20px;
         }
 
+        [dir="rtl"] .navbar .dropdown-item i {
+            margin-right: 0;
+            margin-left: 8px;
+        }
+
         .navbar-nav .nav-link {
             color: var(--navbar-text) !important;
             margin-left: 10px;
+        }
+
+        [dir="rtl"] .navbar-nav .nav-link {
+            margin-left: 0;
+            margin-right: 10px;
         }
 
         .navbar-nav .nav-link:hover {
@@ -215,6 +238,13 @@
             top: 56px;
             height: calc(100vh - 56px - 80px);
             z-index: 1000;
+        }
+
+        [dir="rtl"] .sidebar {
+            left: auto;
+            right: 0;
+            border-right: 0;
+            border-left: 1px solid #333;
         }
 
         /* Collapsed (icons-only) sidebar */
@@ -284,6 +314,11 @@
             width: calc(100% - 70px);
         }
 
+        [dir="rtl"] .main-content.collapsed-offset {
+            margin-left: 0;
+            margin-right: 70px;
+        }
+
         html.dark-mode .sidebar {
             background-color: #0d0d0d;
             border-right-color: #222;
@@ -301,11 +336,22 @@
             font-size: 14px;
         }
 
+        [dir="rtl"] .sidebar .nav-link {
+            border-left: 0;
+            border-right: 3px solid transparent;
+        }
+
         .sidebar .nav-link:hover,
         .sidebar .nav-link.active {
             background-color: rgba(102, 126, 234, 0.1);
             border-left-color: var(--primary-color);
             color: var(--primary-color);
+        }
+
+        [dir="rtl"] .sidebar .nav-link:hover,
+        [dir="rtl"] .sidebar .nav-link.active {
+            border-left-color: transparent;
+            border-right-color: var(--primary-color);
         }
 
         html.dark-mode .sidebar .nav-link:hover,
@@ -344,6 +390,11 @@
             overflow-y: auto;
         }
 
+        [dir="rtl"] .main-content {
+            margin-left: 0;
+            margin-right: 250px;
+        }
+
         @media (max-width: 768px) {
             .sidebar {
                 display: none;
@@ -353,9 +404,19 @@
                 z-index: 1040;
             }
 
+            [dir="rtl"] .sidebar {
+                left: auto;
+                right: -250px;
+            }
+
             .sidebar.show {
                 display: block;
                 left: 0;
+            }
+
+            [dir="rtl"] .sidebar.show {
+                left: auto;
+                right: 0;
             }
 
             /* overlay when sidebar slides in */
@@ -375,6 +436,38 @@
                 margin-left: 0;
                 width: 100%;
             }
+
+            [dir="rtl"] .main-content {
+                margin-right: 0;
+                width: 100%;
+            }
+        }
+
+        [dir="rtl"] .ms-auto {
+            margin-left: 0 !important;
+            margin-right: auto !important;
+        }
+
+        [dir="rtl"] .me-1,
+        [dir="rtl"] .me-2,
+        [dir="rtl"] .me-3 {
+            margin-right: 0 !important;
+        }
+
+        [dir="rtl"] .me-1 { margin-left: .25rem !important; }
+        [dir="rtl"] .me-2 { margin-left: .5rem !important; }
+        [dir="rtl"] .me-3 { margin-left: 1rem !important; }
+
+        [dir="rtl"] .ms-1 { margin-right: .25rem !important; margin-left: 0 !important; }
+        [dir="rtl"] .ms-2 { margin-right: .5rem !important; margin-left: 0 !important; }
+        [dir="rtl"] .ms-3 { margin-right: 1rem !important; margin-left: 0 !important; }
+
+        [dir="rtl"] .text-end {
+            text-align: left !important;
+        }
+
+        [dir="rtl"] .text-start {
+            text-align: right !important;
         }
 
         .card {
@@ -553,7 +646,7 @@
                                     @yield('breadcrumbs')
                                 @else
                                     <li class="breadcrumb-item">
-                                        <a href="{{ Route::has('dashboard') ? route('dashboard') : url('/') }}">Tableau de bord</a>
+                                        <a href="{{ Route::has('dashboard') ? route('dashboard') : url('/') }}">{{ __('messages.dashboard') }}</a>
                                     </li>
                                     <li class="breadcrumb-item active" aria-current="page">{{ $currentPageTitle }}</li>
                                 @endif

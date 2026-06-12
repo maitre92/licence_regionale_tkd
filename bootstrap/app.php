@@ -7,6 +7,7 @@ use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\Guest;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\CheckPermission;
+use App\Http\Middleware\SetLocale;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -15,6 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->web(append: [
+            SetLocale::class,
+        ]);
+
         $middleware->alias([
             'auth' => Authenticate::class,
             'guest' => Guest::class,

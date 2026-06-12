@@ -44,7 +44,12 @@ class AuthController extends Controller
         if (!$this->authService->login($credentials['phone'], $credentials['password'], $remember)) {
             return back()
                 ->withInput($request->only('phone'))
-                ->with('error', 'Les identifiants fournis sont incorrects ou le compte n\'est pas actif.');
+                ->with('error', __('messages.auth.invalid_credentials'));
+        }
+
+        $locale = $request->session()->get('locale');
+        if ($locale && array_key_exists($locale, config('app.supported_locales', []))) {
+            $request->user()?->forceFill(['locale' => $locale])->save();
         }
 
         return redirect()->route('dashboard');
@@ -66,7 +71,7 @@ class AuthController extends Controller
         $this->authService->register($request->validated());
 
         return redirect()->route('login')
-            ->with('success', 'Compte créé avec succès. Veuillez attendre l\'activation par un administrateur.');
+            ->with('success', __('messages.auth.account_created'));
     }
 
     /**
@@ -178,7 +183,7 @@ class AuthController extends Controller
         $user->update($data);
 
         return back()
-            ->with('success', 'Votre profil a été mis à jour avec succès.')
+            ->with('success', __('messages.auth.profile_updated'))
             ->with('profile_tab', 'info');
     }
 
@@ -192,12 +197,12 @@ class AuthController extends Controller
 
         if (!$this->authService->changePassword($user, $credentials['old_password'], $credentials['new_password'])) {
             return back()
-                ->with('error', 'L\'ancien mot de passe est incorrect.')
+                ->with('error', __('messages.auth.old_password_wrong'))
                 ->with('profile_tab', 'password');
         }
 
         return back()
-            ->with('success', 'Votre mot de passe a été modifié avec succès.')
+            ->with('success', __('messages.auth.password_changed'))
             ->with('profile_tab', 'password');
     }
 }

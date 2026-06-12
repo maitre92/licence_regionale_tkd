@@ -1,10 +1,10 @@
 @extends('layouts.admin')
 
-@section('title', 'Ajouter une carte')
+@section('title', __('messages.cards.add'))
 
 @section('actions')
     <a href="{{ route('admin.cards.index') }}" class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left"></i> Retour à la liste
+        <i class="fas fa-arrow-left"></i> {{ __('messages.cards.back_to_list') }}
     </a>
 @endsection
 
